@@ -2,7 +2,9 @@ package org.bonitasoft.serverconfiguration;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bonitasoft.log.event.BEvent;
@@ -29,6 +31,12 @@ public class CollectResult {
     private List<BEvent> listErrors= new ArrayList<BEvent>();
     
     private File localRootPath;
+    
+    /**
+     * different characteristics on the platform is collected, and save in this map
+     */
+    private Map<String,Object> platformCharacteristic = new HashMap<String,Object>();
+ 
     /* ******************************************************************************** */
     /*                                                                                  */
     /* Construtor                                                                       */
@@ -36,6 +44,7 @@ public class CollectResult {
     /*                                                                                  */
     /* ******************************************************************************** */
 
+    
     public CollectResult(File localRootPath, COLLECTLOGSTRATEGY logStrategy) {
         this.localRootPath = localRootPath;
         this.logStrategy = logStrategy;
@@ -70,6 +79,14 @@ public class CollectResult {
     {
         comparaisonTime = System.currentTimeMillis() - startTime;
     }
+    
+    /* ******************************************************************************** */
+    /*                                                                                  */
+    /* Collect report */
+    /*                                                                                  */
+    /*                                                                                  */
+    /* ******************************************************************************** */
+
     /**
      * report a difference.
      * nota : the report will be grouped base on the fileName
@@ -79,4 +96,20 @@ public class CollectResult {
      */
     public void reportProperties(File localFolderPath, String Key, String value, String defaultValue, String explanation) {
     }
+    
+    /**
+     * report a new characteristic on the platform
+     * @param name
+     * @param value
+     */
+    public void reportCharacteristics( String name, Object value) {
+        platformCharacteristic.put( name, value);
+        
+    }
+
+    public Map<String, Object> getPlatformCharacteristic() {
+        return platformCharacteristic;
+    }
+
+    
 }

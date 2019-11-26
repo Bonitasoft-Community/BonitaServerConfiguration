@@ -30,7 +30,6 @@ public class ConfigAPI {
     Logger logger = Logger.getLogger(ConfigAPI.class.getName());
 
     public static BEvent EVENT_PULLERROR = new BEvent(ConfigAPI.class.getName(), 1, Level.APPLICATIONERROR, "Pull Error", "An error arrived during a setup pull", "Analysis is performed on the last setup pull done", "Check error" );
-    public static BEvent EVENT_DIRECTORYNOTEXIST = new BEvent(ConfigAPI.class.getName(), 2, Level.APPLICATIONERROR, "Directory not exist", "A directory is expected, not found", "Collect will not be complete", "Check error" );
 
     /**
      *  create a ConfigAPI, using a local config. So, the BonitaConfigPath is the local Config API
@@ -123,6 +122,8 @@ public class ConfigAPI {
 
         public boolean collectSetup = true;
         public boolean collectServer=true;
+        public boolean hidePassword=true;
+        public boolean collectPlatformCharacteristic=true;
         public boolean useLocalFile=true;
         public File localFile=null;
         
@@ -149,62 +150,11 @@ public class ConfigAPI {
     */
     public CollectResult collectParameters( CollectParameter collectParameter, COLLECTLOGSTRATEGY logStrategy) {
 
-        CollectResult collectResult = new CollectResult(localBonitaConfig.getRootPath(), logStrategy);
-       
-        if (collectParameter.collectSetup) {
-            exploreLevel("/setup/platform_conf/current", collectResult );
-            
-                    
-            
-        }
-        return collectResult;
+        CollectOperation collectOperation = new CollectOperation();
+        return collectOperation.collectParameters(localBonitaConfig, collectParameter, logStrategy);
     }
     
-    private void exploreLevel(String relativeLocalFolderPath, CollectResult collectResult ) {
 
-        File localFolderPath = getFolder(localBonitaConfig.getRootPath(), relativeLocalFolderPath);
-
-        ContentPath localContent = localBonitaConfig.getContentLevel(relativeLocalFolderPath);
-        // this content does not exist in the referentiel, no need to go under
-        if (!localContent.isContentExist()) {
-            collectResult.severe(new BEvent( EVENT_DIRECTORYNOTEXIST, " Directory [" + relativeLocalFolderPath + "] does not exist"));
-            return;
-        }
-        for (File exploreFile : localContent.getListFiles()) {
-            if (exploreFile.isDirectory())
-            {
-                
-                
-                // do not explore the tenant_template_engine, tenant_template_portal, tenant_template_security_scripts
-                if (BonitaConfig.checkLocalisation(exploreFile, "/tenant_template_engine") )
-                    continue;
-                if (BonitaConfig.checkLocalisation(exploreFile, "/tenant_template_portal") )
-                    continue;
-                if (BonitaConfig.checkLocalisation(exploreFile, "/tenant_template_security_scripts") )
-                    continue;
-                
-                // are we in the tenant directory? Then we have to split per tenant
-                
-                
-                try {
-                    exploreLevel( exploreFile.getCanonicalPath() + File.separator, collectResult);
-                } catch (IOException e) {
-                    collectResult.severe(new BEvent( EVENT_DIRECTORYNOTEXIST, " Directory [" + exploreFile.getAbsolutePath() + "] does not exist"));
-
-                }
-            }
-            else {
-                ContentType contentType = ContentType.getContentType(exploreFile);
-                if (contentType instanceof ContentTypeProperties) 
-                {
-                    // we can collect now
-                    
-                }
-            }
-        }
-       return;     
-    }
-    
     /* ******************************************************************************** */
     /*                                                                                  */
     /* Comparaison */
@@ -448,7 +398,7 @@ public class ConfigAPI {
         }
     }
 
-    private File getFolder(File folder, String subPath) {
+    protected static File getFolder(File folder, String subPath) {
         return new File(folder.getAbsolutePath() + subPath);
     }
     private static boolean getBoolean(Object value, boolean defaultValue ) { 
