@@ -38,7 +38,7 @@ public class CollectOperation {
              }
          
          if (collectParameter.collectPlatformCharacteristic)  {
-             
+             collectResult.reportCharacteristics("javamachine", "");
          }
          return collectResult;
      }
