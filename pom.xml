@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>org.bonitasoft.log.event</groupId>
 			<artifactId>bonita-event</artifactId>
-			<version>1.5.0</version>
+			<version>1.7.0</version>
 		</dependency>
 
 		<dependency>
@@ -34,16 +34,18 @@
 			<artifactId>xmlunit-core</artifactId>
 			<version>2.6.3</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>io.github.java-diff-utils</groupId>
+			<artifactId>java-diff-utils</artifactId>
+			<version>4.4</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.4</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.github.java-diff-utils</groupId>
-			<artifactId>java-diff-utils</artifactId>
-			<version>4.4</version>
 		</dependency>
 	</dependencies>
 

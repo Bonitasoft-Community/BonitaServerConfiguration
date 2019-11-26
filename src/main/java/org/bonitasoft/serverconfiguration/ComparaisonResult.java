@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.bonitasoft.log.event.BEvent;
+import org.bonitasoft.log.event.BEventFactory;
+import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.serverconfiguration.content.ContentType;
 
 public class ComparaisonResult {
@@ -17,7 +20,10 @@ public class ComparaisonResult {
 
     private static String logHeader = "BonitaServerConfiguration:";
     
- 
+    public static BEvent EVENT_ERROR = new BEvent(ComparaisonResult.class.getName(), 1, Level.APPLICATIONERROR, "Error reported ", "An severe error is reported", "Analysis can continue, even if one error is reported", "Check parameters" );
+            
+    public List<BEvent> listEvents = new ArrayList<BEvent>();
+
     public enum LOGSTRATEGY {
         OUTALL, OUTDIFFERENCE, LOGALL, LOGDIFFERENCE, NOLOG
     }
@@ -68,7 +74,7 @@ public class ComparaisonResult {
 
     private Map<String,ComparaisonItem> listComparaisonsItems = new HashMap<String,ComparaisonItem>();
 
-    private List<String> listErrors= new ArrayList<String>();
+    private List<BEvent> listErrors= new ArrayList<BEvent>();
     /**
      * 
      */
@@ -76,7 +82,7 @@ public class ComparaisonResult {
 
     /* ******************************************************************************** */
     /*                                                                                  */
-    /* Sub class                                                                        */
+    /* Construtor                                                                       */
     /*                                                                                  */
     /*                                                                                  */
     /* ******************************************************************************** */
@@ -111,12 +117,12 @@ public class ComparaisonResult {
             logger.info( logHeader+  info);   
     }
 
-    public void severe(String info) {
-        listErrors.add( info );
+    public void severe(BEvent errorEvent) {
+        listErrors.add( errorEvent );
         if (this.logStrategy== LOGSTRATEGY.OUTDIFFERENCE)
-            System.out.println(info);
+            System.out.println( errorEvent.toString() );
         if (this.logStrategy== LOGSTRATEGY.LOGDIFFERENCE)
-            logger.info( logHeader+  info);   
+            logger.info( logHeader+  errorEvent.toString());   
     }
 
     /* ******************************************************************************** */
@@ -156,7 +162,7 @@ public class ComparaisonResult {
     public Map<String,ComparaisonItem> getListComparaisonsItems() { 
         return listComparaisonsItems;
     }
-    public List<String> getErrors() {
+    public List<BEvent> getErrors() {
         return listErrors;
     };
     public long getTime() {
@@ -181,7 +187,17 @@ public class ComparaisonResult {
      *
      */
     public enum DIFFERENCELEVEL {
-        CRITICAL, IMPORTANT, MEDIUM, CONFIGURATION, LOWER
+        CRITICAL(0), IMPORTANT(1), MEDIUM(2), CONFIGURATION(3), LOWER(4);
+        private int severity;
+        DIFFERENCELEVEL( int severity ) {
+            this.severity = severity;
+        }
+        public boolean isUpperThan( DIFFERENCELEVEL diff) {
+            return diff.severity > severity;
+        }
+        public int getSeverity() {
+            return severity;
+        }
     }
 
     /**
@@ -244,8 +260,8 @@ public class ComparaisonResult {
         String exceptionDetails = sw.toString();
         ComparaisonItem item = getComparaisonItem(localFolderPath);
         item.addCompound(  DIFFERENCESTATUS.ERROR, DIFFERENCELEVEL.IMPORTANT, null, null, " Error :" + e.getMessage() + " at " + exceptionDetails, false );
-   
-        severe("   File:" + getRelativePath(localFolderPath) + " " + explanation+ " Error:" + e.getMessage() + " at " + exceptionDetails);
+        
+        severe( new BEvent( EVENT_ERROR,e, "   File:" + getRelativePath(localFolderPath) + " " + explanation+ " Error:" + e.getMessage() + " at " + exceptionDetails));
     }
 
     /* ******************************************************************************** */

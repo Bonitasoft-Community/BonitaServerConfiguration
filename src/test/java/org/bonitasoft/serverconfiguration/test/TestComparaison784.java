@@ -8,6 +8,7 @@ import org.bonitasoft.serverconfiguration.ComparaisonResultDecoLog;
 import org.bonitasoft.serverconfiguration.ConfigAPI;
 import org.bonitasoft.serverconfiguration.ConfigAPI.ComparaisonParameter;
 import org.bonitasoft.serverconfiguration.referentiel.BonitaConfigBundle;
+import org.bonitasoft.serverconfiguration.referentiel.BonitaConfigPath;
 import org.junit.Test;
 
 public class TestComparaison784 {
@@ -16,14 +17,14 @@ public class TestComparaison784 {
     public void testPull() {
         File localFolder=new File("D:/pym/Google Drive/consulting/20190429 Verizon Migration/analysis/7.8.4/BonitaSubscription-7.8.4_SIT_110119-2");
 
-        ConfigAPI currentConfig = ConfigAPI.getInstance(localFolder);
+        ConfigAPI currentConfig = ConfigAPI.getInstance( BonitaConfigPath.getInstance(localFolder));
         currentConfig.setupPull();
     }
 
     // @Test
     public void testSIT784() {
         File localFolder=new File("D:/pym/Google Drive/consulting/20190429 Verizon Migration/analysis/7.8.4/BonitaSubscription-7.8.4_SIT_110119-2");
-        ConfigAPI currentConfig = ConfigAPI.getInstance(localFolder);
+        ConfigAPI currentConfig = ConfigAPI.getInstance( BonitaConfigPath.getInstance(localFolder));
 
         File referentielFolder = new File("D:/pym/Google Drive/consulting/20190429 Verizon Migration/analysis/7.8.4/0-referentiel");
         BonitaConfigBundle bonitaReferentiel = BonitaConfigBundle.getInstance(referentielFolder);
@@ -39,7 +40,7 @@ public class TestComparaison784 {
     public void testUAT2() {
         File localFolder=new File("D:/pym/Google Drive/consulting/20190429 Verizon Migration/analysis/7.8.4/BonitaSubscription-7.8.4_uat2_110119");
 
-        ConfigAPI currentConfig = ConfigAPI.getInstance(localFolder);
+        ConfigAPI currentConfig = ConfigAPI.getInstance(BonitaConfigPath.getInstance( localFolder)) ;
 
         File referentielFolder = new File("D:/pym/Google Drive/consulting/20190429 Verizon Migration/analysis/7.8.4/0-referentiel");
         BonitaConfigBundle bonitaReferentiel = BonitaConfigBundle.getInstance(referentielFolder);
@@ -54,7 +55,7 @@ public class TestComparaison784 {
     public void test333() {
         File localFolder=new File("D:/pym/Google Drive/consulting/20190429 Verizon Migration/analysis/7.3.3/BonitaBPMSubscription-7.3.3_PROD_110119");
         
-        ConfigAPI currentConfig = ConfigAPI.getInstance(localFolder);
+        ConfigAPI currentConfig = ConfigAPI.getInstance(BonitaConfigPath.getInstance(localFolder));
 
         File referentielFolder = new File("D:/pym/Google Drive/consulting/20190429 Verizon Migration/analysis/7.3.3/0-referentiel");
         BonitaConfigBundle bonitaReferentiel = BonitaConfigBundle.getInstance(referentielFolder);
@@ -65,11 +66,11 @@ public class TestComparaison784 {
         decoLog.log(LOGSTRATEGY.OUTALL);
 
     }
-    @Test
+    // @Test
     public void testWidlflyBBVA() {
         File localFolder=new File("D:/pym/Google Drive/consulting/20191115 BBVA/BBVA-Wildfly-7.7.2-cantstart");
         
-        ConfigAPI currentConfig = ConfigAPI.getInstance(localFolder);
+        ConfigAPI currentConfig = ConfigAPI.getInstance(BonitaConfigPath.getInstance(localFolder));
 
         File referentielFolder = new File("D:/pym/Google Drive/consulting/20191115 BBVA/Bonita-wildfly-7.7.2-referentiel");
         BonitaConfigBundle bonitaReferentiel = BonitaConfigBundle.getInstance(referentielFolder);
@@ -80,6 +81,24 @@ public class TestComparaison784 {
         decoLog.log(LOGSTRATEGY.OUTALL);
 
     }
+    
+   
+    @Test
+    public void testWidlflyBBVAPatch() {
+        File localFolder=new File("D:/pym/Google Drive/consulting/20191115 BBVA/bonita-all-in-one-7.7.2_patch");
+        
+        ConfigAPI currentConfig = ConfigAPI.getInstance(BonitaConfigPath.getInstance(localFolder));
+
+        File referentielFolder = new File("D:/pym/Google Drive/consulting/20191115 BBVA/bonita-all-in-one-7.7.2_backuppatch");
+        BonitaConfigBundle bonitaReferentiel = BonitaConfigBundle.getInstance(referentielFolder);
+
+        ComparaisonResult comparaison = currentConfig.compareWithReferentiel(bonitaReferentiel, getComparaisonParameter(), LOGSTRATEGY.NOLOG);
+
+        ComparaisonResultDecoLog decoLog = new ComparaisonResultDecoLog(comparaison, "BonitaSubscription-7.7.2_Wildfly_BBVA",localFolder, referentielFolder );
+        decoLog.log(LOGSTRATEGY.OUTALL);
+
+    }
+    
     
     private ComparaisonParameter getComparaisonParameter() {
         

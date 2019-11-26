@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.serverconfiguration.ComparaisonResult.ComparaisonCoumpound;
 import org.bonitasoft.serverconfiguration.ComparaisonResult.ComparaisonItem;
 import org.bonitasoft.serverconfiguration.ComparaisonResult.DIFFERENCESTATUS;
@@ -38,9 +39,9 @@ public class ComparaisonResultDecoLog {
          if (comparaisonResult.getErrors().size()>0)
          {
              info(logStrategy," ######### Errors"  );
-             for (String info : comparaisonResult.getErrors())
+             for (BEvent info : comparaisonResult.getErrors())
              {
-                 info(logStrategy,info);
+                 info(logStrategy,info.toString());
              }
          }
          
