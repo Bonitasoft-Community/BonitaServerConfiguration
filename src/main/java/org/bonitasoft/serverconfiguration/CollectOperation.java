@@ -10,6 +10,7 @@ import org.bonitasoft.serverconfiguration.ConfigAPI.CollectParameter;
 import org.bonitasoft.serverconfiguration.content.ContentPath;
 import org.bonitasoft.serverconfiguration.content.ContentType;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties;
+import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyPropertiesReader;
 import org.bonitasoft.serverconfiguration.referentiel.BonitaConfig;
 import org.bonitasoft.serverconfiguration.referentiel.BonitaConfigPath;
 
@@ -31,7 +32,7 @@ public class CollectOperation {
          CollectResult collectResult = new CollectResult(localBonitaConfig.getRootPath(), logStrategy);
         
          if (collectParameter.collectSetup) {
-             exploreLevel("/setup/platform_conf/current", collectResult );
+             exploreLevel("/setup/platform_conf/current/", collectResult );
          }
          
          if (collectParameter.collectServer) {
@@ -74,22 +75,31 @@ public class CollectOperation {
                      continue;
                  if (BonitaConfig.checkLocalisation(exploreFile, "/tenant_template_security_scripts") )
                      continue;
-                 
-                 // are we in the tenant directory? Then we have to split per tenant
-                 
-                 
-                 try {
-                     exploreLevel( exploreFile.getCanonicalPath() + File.separator, collectResult);
-                 } catch (IOException e) {
-                     collectResult.severe(new BEvent( EVENT_DIRECTORYNOTEXIST, " Directory [" + exploreFile.getAbsolutePath() + "] does not exist"));
-
+                 if (BonitaConfig.checkLocalisation(exploreFile, "/current/tenants") )
+                 {
+                     // folder is the tenant Id
+                     collectResult.setCollectorTenant(exploreFile.getName() );
                  }
+                 if (BonitaConfig.checkLocalisation(exploreFile, "/current/platform_engine") )
+                 {
+                     collectResult.setCollector("platform_engine" );
+                 }
+                 if (BonitaConfig.checkLocalisation(exploreFile, "/current/platform_portal") )
+                 {
+                     collectResult.setCollector("platform_portal" );
+                 }
+                     
+             
+                 // are we in the tenant directory? Then we have to split per tenant
+                     exploreLevel( relativeLocalFolderPath + exploreFile.getName() + File.separator, collectResult);
              }
              else {
                  ContentType contentType = ContentType.getContentType(exploreFile);
                  if (contentType instanceof ContentTypeProperties) 
                  {
                      // we can collect now
+                     KeyPropertiesReader keyReader = ((ContentTypeProperties)contentType).readKeys();
+                     collectResult.reportProperties( ((ContentTypeProperties)contentType), keyReader );
                      
                  }
              }
