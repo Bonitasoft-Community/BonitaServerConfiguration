@@ -28,6 +28,20 @@ public abstract class ContentType {
     
     public abstract DIFFERENCELEVEL getLevel();
 
+    public String getFileName() {
+        return file.getName();
+    }
+    public String getCompleteFileName() {
+        return file.getAbsolutePath();
+    }
+    
+    public String getPrefixFile() {
+        String fileName = file.getName();
+        int pos=fileName.lastIndexOf(".");
+        if (pos!=-1)
+            return fileName.substring(pos+1);
+        return fileName;
+    }
     /* ******************************************************************************** */
     /*                                                                                  */
     /* Register all different contentType */

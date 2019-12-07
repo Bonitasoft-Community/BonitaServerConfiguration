@@ -83,13 +83,20 @@ public class ContentTypeText extends ContentType {
         }
     }
 
-    
+    /**
+     * read this content file
+     * @return
+     */
+    public List<String> readFile()
+    {
+        return readFile( this.file );
+    }
     /**
      * 
      * @param file
      * @return
      */
-    public List<String> readFile(File file ) {        
+    protected List<String> readFile(File file ) {        
         SortedMap<String, Charset> charsets = Charset.availableCharsets();
         for (Charset charset : charsets.values()) {
             try {

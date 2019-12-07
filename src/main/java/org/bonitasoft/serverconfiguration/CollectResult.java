@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
+import org.bonitasoft.serverconfiguration.content.ContentType;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyPropertiesReader;
 
@@ -81,35 +82,81 @@ public class CollectResult {
     
     /* ******************************************************************************** */
     /*                                                                                  */
+    /* Class Collect                                                                    */ 
+    /*                                                                                  */
+    /*                                                                                  */
+    /* ******************************************************************************** */
+    
+    public class ClassCollect {
+        public String name;
+        public Map<String,List<KeyPropertiesReader>> listPropertiesReader = new HashMap<String,List<KeyPropertiesReader>>();
+        public Map<String,List<KeyPropertiesReader>> listTenantsReader = new HashMap<String,List<KeyPropertiesReader>>();
+        public Map<String, String> mapContentReader = new HashMap<String,String>();
+        public Map<String, Object> mapCharacteristic = new HashMap<String,Object>();
+        public List<Analyse> listAnalyses = new ArrayList<Analyse>();
+        
+        /**
+         * mapContent key is the complete file name
+         * @param fileName
+         * @return
+         */
+        public String getContentByFileName(String fileName ) {
+            for (String completeName : mapContentReader.keySet())
+                if (completeName.endsWith(fileName))
+                    return mapContentReader.get( completeName);
+            return null;
+        }
+        
+    }
+    public Map<String, ClassCollect> mapClassCollect = new HashMap<String, ClassCollect >();
+   
+    public ClassCollect currentClassCollect;
+    public List<KeyPropertiesReader> currentCollector;
+    
+    public void setCurrentClassCollect( String classCollectName )
+    {
+        if (! mapClassCollect.containsKey(classCollectName)) 
+        {
+            ClassCollect classCollect = new ClassCollect();
+            classCollect.name = classCollectName;
+            mapClassCollect.put(classCollectName,  classCollect);
+        }
+        currentClassCollect= mapClassCollect.get(classCollectName );
+    }
+    
+    public ClassCollect getClassCollect(String classCollectName )
+    {
+        return mapClassCollect.get(classCollectName );
+        
+    }
+    
+    /* ******************************************************************************** */
+    /*                                                                                  */
     /* Collect report */
     /*                                                                                  */
     /*                                                                                  */
     /* ******************************************************************************** */
-    public Map<String,List<KeyPropertiesReader>> listPropertiesReader = new HashMap<String,List<KeyPropertiesReader>>();
-    public Map<String,List<KeyPropertiesReader>> listTenantsReader = new HashMap<String,List<KeyPropertiesReader>>();
-    
-    public List<KeyPropertiesReader> currentCollector;
-    
+
     public void setCollectorTenant(String tenantId ) 
     {
-        currentCollector = listTenantsReader.get( tenantId );
+        currentCollector = currentClassCollect.listTenantsReader.get( tenantId );
         if (currentCollector==null)
         {
             currentCollector = new ArrayList<KeyPropertiesReader>();
-            listTenantsReader.put( tenantId, currentCollector);
+            currentClassCollect.listTenantsReader.put( tenantId, currentCollector);
         }
     }
     
     public void setCollector(String collectorName ) 
     {
-        currentCollector = listPropertiesReader.get( collectorName );
+        currentCollector = currentClassCollect.listPropertiesReader.get( collectorName );
         if (currentCollector==null)
         {
             currentCollector = new ArrayList<KeyPropertiesReader>();
-            listPropertiesReader.put( collectorName, currentCollector);
+            currentClassCollect.listPropertiesReader.put( collectorName, currentCollector);
         }
     }
-    
+   
     /**
      * report a set of properties.
      * nota : the report will be grouped base on the fileName
@@ -122,7 +169,9 @@ public class CollectResult {
         if (currentCollector!=null)
             currentCollector.add( keyPropertiesReaders);
     }
-    
+    public void reportContent(ContentType contentType, String content) {
+        currentClassCollect.mapContentReader.put(contentType.getCompleteFileName(), content);
+    }
     
     /**
      * report a new characteristic on the platform
@@ -130,13 +179,15 @@ public class CollectResult {
      * @param value
      */
     public void reportCharacteristics( String name, Object value) {
-        platformCharacteristic.put( name, value);
+        currentClassCollect.mapCharacteristic.put( name, value);
         
     }
 
-    public Map<String, Object> getPlatformCharacteristic() {
-        return platformCharacteristic;
+    
+    public void reportAnalysis( Analyse analyse ) {
+        currentClassCollect.listAnalyses.add(analyse);
     }
+  
 
     
 }

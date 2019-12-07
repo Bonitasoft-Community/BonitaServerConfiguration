@@ -82,10 +82,10 @@ public class ConfigAPI {
             {
                 // PlatformSetupApplication.main(args);
                 Runtime rt = Runtime.getRuntime();
-                Process process = rt.exec(command, null, setupFile);
+                /* Process process = */ rt.exec(command, null, setupFile);
                 
                 
-                BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                // BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
                 String resultCommand="";
                 /*String s = null;
@@ -122,6 +122,8 @@ public class ConfigAPI {
 
         public boolean collectSetup = true;
         public boolean collectServer=true;
+        public boolean collectAnalysis=true;
+        
         public boolean hidePassword=true;
         public boolean collectPlatformCharacteristic=true;
         public boolean useLocalFile=true;
@@ -131,6 +133,7 @@ public class ConfigAPI {
             CollectParameter comparaisonParameter = new CollectParameter();
             comparaisonParameter.collectSetup = getBoolean(parameters.get("collectSetup"), false);
             comparaisonParameter.collectServer = getBoolean(parameters.get("collectServer"), true);
+            comparaisonParameter.collectAnalysis = getBoolean(parameters.get("collectAnalysis"), true);
             comparaisonParameter.useLocalFile = getBoolean(parameters.get("useLocalFile"), true);
             
             if (parameters.containsKey("localFile"))
@@ -219,9 +222,14 @@ public class ConfigAPI {
         return comparaisonOperation.compareWithReferentiel(localBonitaConfig, referentiel, comparaisonParameter, logStrategy);
     }
 
-    private List<String> listFilesIgnore = Arrays.asList("catalina.pid");
 
- 
+    /* ******************************************************************************** */
+    /*                                                                                  */
+    /* Tools */
+    /*                                                                                  */
+    /*                                                                                  */
+    /* ******************************************************************************** */
+
 
     protected static File getFolder(File folder, String subPath) {
         return new File(folder.getAbsolutePath() + subPath);
