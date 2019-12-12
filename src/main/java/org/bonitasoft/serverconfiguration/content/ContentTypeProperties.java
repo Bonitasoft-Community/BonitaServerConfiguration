@@ -209,6 +209,10 @@ public class ContentTypeProperties extends ContentType {
 
             return record;
         }
+
+        public File getFile() {
+            return this.file;
+        }
     }
 
     public KeyPropertiesReader readKeys(boolean hidePassword) {
