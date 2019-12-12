@@ -128,6 +128,7 @@ public class ConfigAPI {
         public boolean collectPlatformCharacteristic=true;
         public boolean useLocalFile=true;
         public File localFile=null;
+        public long tenantId =1;
         
         public static CollectParameter getInstanceFromMap(Map<String,Object> parameters) {
             CollectParameter comparaisonParameter = new CollectParameter();

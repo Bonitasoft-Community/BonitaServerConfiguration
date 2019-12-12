@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bonitasoft.console.common.server.preferences.properties.ConsoleProperties;
+import org.bonitasoft.console.common.server.preferences.properties.PropertiesFactory;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.serverconfiguration.CollectResult.COLLECTLOGSTRATEGY;
@@ -67,6 +69,11 @@ public class CollectOperation {
              
          if (collectParameter.collectPlatformCharacteristic)  {
              collectResult.reportCharacteristics("javaruntimeversion", System.getProperty("java.runtime.version"));
+             ConsoleProperties consoleProperties = PropertiesFactory.getConsoleProperties(collectParameter.tenantId);
+             for (Object key : consoleProperties.getProperties().entrySet()) {
+                 // serverParams.put("CustompageDebug", consoleProperties.getProperty(ConsoleProperties.CUSTOM_PAGE_DEBUG));
+                 collectResult.reportCharacteristics(key.toString(), consoleProperties.getProperty(key.toString()));
+             }
          }
          return collectResult;
      }

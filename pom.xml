@@ -13,9 +13,10 @@
 			<version>7.6.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.bonitasoft.engine</groupId>
-			<artifactId>bonita-client</artifactId>
+			<groupId>org.bonitasoft.console</groupId>
+			<artifactId>console-common</artifactId>
 			<version>7.6.0</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
