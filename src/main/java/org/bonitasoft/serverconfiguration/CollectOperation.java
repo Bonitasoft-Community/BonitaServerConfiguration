@@ -26,7 +26,7 @@ public class CollectOperation {
     private BonitaConfigPath localBonitaConfig;
     CollectParameter collectParameter;
     
-    public enum TYPECOLLECT { SETUP, TOMCAT,ANALYSIS };
+    public enum TYPECOLLECT { SETUP, SERVER,ANALYSIS, PLATFORM };
     
      
     public CollectOperation() {
@@ -48,16 +48,16 @@ public class CollectOperation {
 
          CollectResult collectResult = new CollectResult(localBonitaConfig.getRootPath(), logStrategy);
         
-         if (collectParameter.collectSetup) {
+         if (collectParameter.listTypeCollect.contains(TYPECOLLECT.SETUP)) {
              collectResult.setCurrentClassCollect(TYPECOLLECT.SETUP.toString());
              exploreLevel("/setup/platform_conf/current/", TYPECOLLECT.SETUP, collectResult );
          }
          
-         if (collectParameter.collectServer) {
-             collectResult.setCurrentClassCollect(TYPECOLLECT.TOMCAT.toString());
-             exploreLevel("/server/",  TYPECOLLECT.TOMCAT, collectResult );
+         if (collectParameter.listTypeCollect.contains(TYPECOLLECT.SERVER)) {
+             collectResult.setCurrentClassCollect(TYPECOLLECT.SERVER.toString());
+             exploreLevel("/server/",  TYPECOLLECT.SERVER, collectResult );
              }
-         if (collectParameter.collectAnalysis) {
+         if (collectParameter.listTypeCollect.contains(TYPECOLLECT.ANALYSIS)) {
              collectResult.setCurrentClassCollect(TYPECOLLECT.ANALYSIS.toString());
              exploreLevel("/",  TYPECOLLECT.ANALYSIS, collectResult );
              List<Analyse> listAnalyses = Analyse.instanciateAllAnalyses();
@@ -67,7 +67,7 @@ public class CollectOperation {
              }
          }
              
-         if (collectParameter.collectPlatformCharacteristic)  {
+         if (collectParameter.listTypeCollect.contains(TYPECOLLECT.PLATFORM))  {
              collectResult.reportCharacteristics("javaruntimeversion", System.getProperty("java.runtime.version"));
              ConsoleProperties consoleProperties = PropertiesFactory.getConsoleProperties(collectParameter.tenantId);
              for (Object key : consoleProperties.getProperties().entrySet()) {
@@ -128,7 +128,7 @@ public class CollectOperation {
                          collectResult.setCollector("platform_portal" );
                      }
                  }
-                 if (typeCollect == TYPECOLLECT.TOMCAT)
+                 if (typeCollect == TYPECOLLECT.SERVER)
                  {
                      // if exploreFile is a tenant ID (so the PARENT is the tenants folder)
                      if (BonitaConfig.checkLocalisation(localFolderPath, "/tomcat/conf") )
@@ -136,12 +136,12 @@ public class CollectOperation {
                          // folder is the tenant Id
                          collectResult.setCollector("conf" );
                      }
-                     if (BonitaConfig.checkLocalisation(localFolderPath, "/tomcat/webapps/bonita") )
+                     if (BonitaConfig.checkLocalisation(localFolderPath, "/tomcat/server/webapps/bonita") )
                      {
                          // folder is the tenant Id
                          collectResult.setCollector("bonita" );
                      }
-                     if (BonitaConfig.checkLocalisation(localFolderPath, "/tomcat/webapps") && ! exploreFile.getName().equals("bonita") )
+                     if (BonitaConfig.checkLocalisation(localFolderPath, "/tomcat/server/webapps") && ! exploreFile.getName().equals("bonita") )
                          continue; // only on Bonita
                  }
              
@@ -161,7 +161,7 @@ public class CollectOperation {
                          
                      }
                  }
-                 if (typeCollect == TYPECOLLECT.TOMCAT || typeCollect ==  TYPECOLLECT.ANALYSIS)
+                 if (typeCollect == TYPECOLLECT.SERVER || typeCollect ==  TYPECOLLECT.ANALYSIS)
                  {
                      if (exploreFile.getName().equals("pom.properties"))
                          continue;
@@ -177,12 +177,8 @@ public class CollectOperation {
                      {
                          // we can collect now
                          ContentTypeText contentTypetext = (ContentTypeText) contentType;
-                         List<String> listLines = contentTypetext.readFile();
-                         StringBuffer content = new StringBuffer();
-                         for( String line : listLines )
-                             content.append(line+"\n");
                          
-                         collectResult.reportContent( contentTypetext, content.toString() );
+                         collectResult.reportContentText( contentTypetext );
                          
                      }
                     

@@ -1,27 +1,20 @@
 package org.bonitasoft.serverconfiguration;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
-import org.bonitasoft.log.event.BEventFactory;
+import org.bonitasoft.serverconfiguration.CollectOperation.TYPECOLLECT;
 import org.bonitasoft.serverconfiguration.CollectResult.COLLECTLOGSTRATEGY;
-import org.bonitasoft.serverconfiguration.ComparaisonResult.DIFFERENCELEVEL;
-import org.bonitasoft.serverconfiguration.ComparaisonResult.DIFFERENCESTATUS;
 import org.bonitasoft.serverconfiguration.ComparaisonResult.LOGSTRATEGY;
-import org.bonitasoft.serverconfiguration.content.ContentPath;
-import org.bonitasoft.serverconfiguration.content.ContentType;
-import org.bonitasoft.serverconfiguration.content.ContentTypeProperties;
 import org.bonitasoft.serverconfiguration.referentiel.BonitaConfig;
 import org.bonitasoft.serverconfiguration.referentiel.BonitaConfigPath;
 
@@ -120,21 +113,24 @@ public class ConfigAPI {
 
     public static class CollectParameter {
 
-        public boolean collectSetup = true;
-        public boolean collectServer=true;
-        public boolean collectAnalysis=true;
+        public Set<TYPECOLLECT> listTypeCollect = new HashSet<TYPECOLLECT>();
         
         public boolean hidePassword=true;
-        public boolean collectPlatformCharacteristic=true;
         public boolean useLocalFile=true;
         public File localFile=null;
         public long tenantId =1;
         
         public static CollectParameter getInstanceFromMap(Map<String,Object> parameters) {
             CollectParameter comparaisonParameter = new CollectParameter();
-            comparaisonParameter.collectSetup = getBoolean(parameters.get("collectSetup"), false);
-            comparaisonParameter.collectServer = getBoolean(parameters.get("collectServer"), true);
-            comparaisonParameter.collectAnalysis = getBoolean(parameters.get("collectAnalysis"), true);
+            comparaisonParameter.listTypeCollect = new HashSet<TYPECOLLECT>();
+            
+            if (getBoolean(parameters.get("collectSetup"), false))
+                comparaisonParameter.listTypeCollect.add( TYPECOLLECT.SETUP);
+            if (getBoolean(parameters.get("collectServer"), false))
+                comparaisonParameter.listTypeCollect.add( TYPECOLLECT.SERVER);
+            if ( getBoolean(parameters.get("collectAnalysis"), false))
+            comparaisonParameter.listTypeCollect.add( TYPECOLLECT.ANALYSIS);
+            
             comparaisonParameter.useLocalFile = getBoolean(parameters.get("useLocalFile"), true);
             
             if (parameters.containsKey("localFile"))

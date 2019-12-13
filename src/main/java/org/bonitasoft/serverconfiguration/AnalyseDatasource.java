@@ -10,6 +10,7 @@ import org.bonitasoft.serverconfiguration.CollectResult.ClassCollect;
 import org.bonitasoft.serverconfiguration.content.ContentType;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyProperties;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyPropertiesReader;
+import org.bonitasoft.serverconfiguration.content.ContentTypeText;
 import org.bonitasoft.serverconfiguration.content.ContentTypeXml;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -51,24 +52,27 @@ public class AnalyseDatasource extends Analyse{
             
             // Assuming server.xml is a XML
             long maxThreads=0;
-            String contentServer = classCollect.getContentByFileName("server.xml");
-            ContentTypeXml contentXML= new ContentTypeXml( contentServer );
-            Element nodeConnector= contentXML.getXmlElement("Connector", "protocol","HTTP/1.1");
-            if (nodeConnector!=null) {
-                maxThreads = Long.valueOf( nodeConnector.getAttribute("maxThreads"));
+            ContentTypeText contentTextServer = classCollect.getContentTextByFileName("server.xml");
+            if (contentTextServer !=null) {
+                ContentTypeXml contentXML=  new ContentTypeXml( contentTextServer.getContent() );
+            
+                Element nodeConnector= contentXML.getXmlElement("Connector", "protocol","HTTP/1.1");
+                if (nodeConnector!=null) {
+                    maxThreads = Long.valueOf( nodeConnector.getAttribute("maxThreads"));
+                }
+                setInfo("Tomcat Thread", maxThreads);
             }
-            setInfo("Tomcat Thread", maxThreads);
-
             // get datasource now
             long maxTotalDatasource=0;
 
-            String contentDatasource = classCollect.getContentByFileName("bonita.xml");
-            contentXML= new ContentTypeXml( contentDatasource );
-            Element nodeResource= contentXML.getXmlElement("Resource", "name", "bonitaDS");
-            if (nodeResource != null)  {
-                    maxTotalDatasource =  Long.valueOf( nodeResource.getAttribute("maxTotal"));
+            ContentTypeText contentDatasource = classCollect.getContentTextByFileName("bonita.xml");
+            if (contentDatasource !=null) {
+                ContentTypeXml contentXML= new ContentTypeXml( contentDatasource.getContent() );
+                Element nodeResource= contentXML.getXmlElement("Resource", "name", "bonitaDS");
+                if (nodeResource != null)  {
+                        maxTotalDatasource =  Long.valueOf( nodeResource.getAttribute("maxTotal"));
+                }
             }
-            
             Map<Long, AnalyseTenant> mapPerTenant = new HashMap<Long,AnalyseTenant>();
             List<KeyPropertiesReader> keyProperties = classCollect.listPropertiesReader.get("conf");
             // search ""

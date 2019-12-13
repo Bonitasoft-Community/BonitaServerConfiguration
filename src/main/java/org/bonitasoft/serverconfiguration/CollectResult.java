@@ -12,6 +12,7 @@ import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.serverconfiguration.content.ContentType;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyPropertiesReader;
+import org.bonitasoft.serverconfiguration.content.ContentTypeText;
 
 
 public class CollectResult {
@@ -91,7 +92,7 @@ public class CollectResult {
         public String name;
         public Map<String,List<KeyPropertiesReader>> listPropertiesReader = new HashMap<String,List<KeyPropertiesReader>>();
         public Map<String,List<KeyPropertiesReader>> listTenantsReader = new HashMap<String,List<KeyPropertiesReader>>();
-        public Map<String, String> mapContentReader = new HashMap<String,String>();
+        public Map<String, ContentTypeText> mapContentText = new HashMap<String,ContentTypeText>();
         public Map<String, Object> mapCharacteristic = new HashMap<String,Object>();
         public List<Analyse> listAnalyses = new ArrayList<Analyse>();
         
@@ -100,10 +101,10 @@ public class CollectResult {
          * @param fileName
          * @return
          */
-        public String getContentByFileName(String fileName ) {
-            for (String completeName : mapContentReader.keySet())
+        public ContentTypeText getContentTextByFileName(String fileName ) {
+            for (String completeName : mapContentText.keySet())
                 if (completeName.endsWith(fileName))
-                    return mapContentReader.get( completeName);
+                    return mapContentText.get( completeName);
             return null;
         }
         
@@ -169,8 +170,8 @@ public class CollectResult {
         if (currentCollector!=null)
             currentCollector.add( keyPropertiesReaders);
     }
-    public void reportContent(ContentType contentType, String content) {
-        currentClassCollect.mapContentReader.put(contentType.getCompleteFileName(), content);
+    public void reportContentText(ContentTypeText contentText) {
+        currentClassCollect.mapContentText.put(contentText.getCompleteFileName(), contentText);
     }
     
     /**

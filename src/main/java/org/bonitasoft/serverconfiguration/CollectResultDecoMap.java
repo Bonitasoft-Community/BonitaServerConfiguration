@@ -113,10 +113,10 @@ public class CollectResultDecoMap {
         List<Map<String, Object>> listContents = new ArrayList<Map<String, Object>>();
         result.put("contents", listContents);
 
-        for (String contentName : classCollect.mapContentReader.keySet()) {
+        for (String contentName : classCollect.mapContentText.keySet()) {
             Map<String, Object> content = new HashMap<String, Object>();
             content.put("name", contentName);
-            content.put("content", classCollect.mapContentReader.get(contentName));
+            content.put("content", classCollect.mapContentText.get(contentName));
             listContents.add(content);
         }
 
