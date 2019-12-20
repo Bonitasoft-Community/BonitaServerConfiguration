@@ -67,9 +67,9 @@ public class CollectResultDecoZip {
         {
             CollectResult.ClassCollect classCollect = collectResult.getClassCollect(typeCollect.toString());
     
-            for (String name : classCollect.listPropertiesReader.keySet()) {
+            for (String name : classCollect.mapKeyPropertiesReader.keySet()) {
     
-                for (ContentTypeProperties.KeyPropertiesReader keyPropertiesReader : classCollect.listPropertiesReader.get( name )) {
+                for (ContentTypeProperties.KeyPropertiesReader keyPropertiesReader : classCollect.mapKeyPropertiesReader.get( name )) {
                     
                     addFileToZip(zos, keyPropertiesReader.getFile(), resultZip);
                 }

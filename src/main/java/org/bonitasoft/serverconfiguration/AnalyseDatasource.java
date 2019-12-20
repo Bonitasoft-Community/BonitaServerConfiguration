@@ -8,6 +8,7 @@ import org.bonitasoft.serverconfiguration.Analyse.AnalyseRecommendation;
 import org.bonitasoft.serverconfiguration.CollectOperation.TYPECOLLECT;
 import org.bonitasoft.serverconfiguration.CollectResult.ClassCollect;
 import org.bonitasoft.serverconfiguration.content.ContentType;
+import org.bonitasoft.serverconfiguration.content.ContentTypeProperties;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyProperties;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyPropertiesReader;
 import org.bonitasoft.serverconfiguration.content.ContentTypeText;
@@ -64,20 +65,35 @@ public class AnalyseDatasource extends Analyse{
             }
             // get datasource now
             long maxTotalDatasource=0;
-
+            String infoDatasource="";
             ContentTypeText contentDatasource = classCollect.getContentTextByFileName("bonita.xml");
             if (contentDatasource !=null) {
                 ContentTypeXml contentXML= new ContentTypeXml( contentDatasource.getContent() );
                 Element nodeResource= contentXML.getXmlElement("Resource", "name", "bonitaDS");
-                if (nodeResource != null)  {
+                if (nodeResource == null)  {
+                    infoDatasource+="Can't found the [bonita.xml] file";
+                }else {
+                    String factory = nodeResource.getAttribute("factory");
+                    if (factory !=null && "bitronix.tm.resource.ResourceObjectFactory".equals(factory)) 
+                    {
+                        infoDatasource+="Bitronix usage [bitronix-resources.properties/resource.ds1.maxPoolSize];";
+                        KeyPropertiesReader contentBitronix = classCollect.getKeyPropertiesByFileName("bitronix-resources.properties");
+                        if (contentBitronix == null)
+                            infoDatasource+="Can't found the [bitronix-resources.properties] file";
+                        else
+                            maxTotalDatasource=contentBitronix.getLongValue("resource.ds1.maxPoolSize", 0L);
+                    } else {
+                        
                         maxTotalDatasource =  Long.valueOf( nodeResource.getAttribute("maxTotal"));
-                }
+                        infoDatasource+="Direct datasource usage [bonita.xml/resource.ds1.maxPoolSize/maxTotal]";
+                    }
+                } 
             }
             Map<Long, AnalyseTenant> mapPerTenant = new HashMap<Long,AnalyseTenant>();
-            List<KeyPropertiesReader> keyProperties = classCollect.listPropertiesReader.get("conf");
+            List<KeyPropertiesReader> keyProperties = classCollect.mapKeyPropertiesReader.get("conf");
             // search ""
             long totalQuartz=0;
-
+            
             for (KeyPropertiesReader keyPropertiesReader : keyProperties)
             {
                   
@@ -104,23 +120,23 @@ public class AnalyseDatasource extends Analyse{
             for (Long tenantId : mapPerTenant.keySet())
             {
                 AnalyseTenant analysePerTenant = mapPerTenant.get(tenantId);
-                setInfo("Workers Thread ("+tenantId+")", analysePerTenant.worker);
+                setInfo("Workers Thread ("+tenantId+") [bonita-tenant-community-custom.properties/bonita.tenant.work.maximumPoolSize]", analysePerTenant.worker);
                 
                 totalWorker+=analysePerTenant.worker;
             }
-            setInfo("Quartz Thread", totalQuartz);
-            setInfo("Database Max connection", maxTotalDatasource);
+            setInfo("Quartz Thread [bonita-platform-community-custom.properties/bonita.platform.scheduler.quartz.threadpool.size]", totalQuartz);
+            setInfo("Database Max connection "+infoDatasource, maxTotalDatasource);
             
         
             // recomendation : size
             AnalyseRecommendation recommendation = new AnalyseRecommendation();
-            recommendation.name = "pool size";
+            recommendation.name = "Data Source Pool size";
             recommendation.value = Long.valueOf( maxThreads+totalWorker+totalQuartz );
             long totalUsage = maxThreads+totalWorker+totalQuartz;
             
             if ( maxTotalDatasource >= totalUsage ) {
                 recommendation.level= LEVELRECOMMENDATION.SUCCESS;
-                recommendation.whatToDo="You have enough connection (required "+totalUsage+") Tomcat has "+maxTotalDatasource+" connections";
+                recommendation.whatToDo="You have enough connection (required "+totalUsage+") Server Data Source Pool size has "+maxTotalDatasource+" connections";
             }
             else if ( maxTotalDatasource >= totalUsage * 0.8 ) {
                 recommendation.level= LEVELRECOMMENDATION.INFO;
@@ -134,7 +150,7 @@ public class AnalyseDatasource extends Analyse{
                 recommendation.level= LEVELRECOMMENDATION.DANGER;
                 recommendation.whatToDo="You shoud Increase the number of datasource to "+totalUsage+ " (you have currently "+maxTotalDatasource+")";
             }
-            recommendation.explanation="Total usage of datasource is "+totalUsage+", when pool size is "+maxTotalDatasource;
+            recommendation.explanation="Total usage of datasource is "+totalUsage+", when Server Data Source Pool size is "+maxTotalDatasource;
             
             
             addRecommendations( recommendation );

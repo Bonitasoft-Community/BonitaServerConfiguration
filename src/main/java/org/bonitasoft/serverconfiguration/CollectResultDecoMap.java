@@ -88,10 +88,10 @@ public class CollectResultDecoMap {
         Map<String, Object> listPropertiesMap = new HashMap<String, Object>();
         result.put("properties", listPropertiesMap);
 
-        for (String name : classCollect.listPropertiesReader.keySet()) {
+        for (String name : classCollect.mapKeyPropertiesReader.keySet()) {
             List<Map<String, Object>> listEngineKeys = new ArrayList<Map<String, Object>>();
             listPropertiesMap.put(name, listEngineKeys);
-            for (KeyPropertiesReader keyPropertiesReader : classCollect.listPropertiesReader.get(name)) {
+            for (KeyPropertiesReader keyPropertiesReader : classCollect.mapKeyPropertiesReader.get(name)) {
                 listEngineKeys.add(keyPropertiesReader.getMap(isLineFeedToHtml));
             }
         }
@@ -116,7 +116,7 @@ public class CollectResultDecoMap {
         for (String contentName : classCollect.mapContentText.keySet()) {
             Map<String, Object> content = new HashMap<String, Object>();
             content.put("name", contentName);
-            content.put("content", classCollect.mapContentText.get(contentName));
+            content.put("content", classCollect.mapContentText.get(contentName).getContent());
             listContents.add(content);
         }
 

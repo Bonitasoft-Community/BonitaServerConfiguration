@@ -90,8 +90,20 @@ public class CollectResult {
     
     public class ClassCollect {
         public String name;
-        public Map<String,List<KeyPropertiesReader>> listPropertiesReader = new HashMap<String,List<KeyPropertiesReader>>();
+        /**
+         * Key is the collector Name (platform_engine, platform_portal)
+         * contents are KeyPropertiesReader
+         */
+        public Map<String,List<KeyPropertiesReader>> mapKeyPropertiesReader = new HashMap<String,List<KeyPropertiesReader>>();
+        /**
+         * KeyProperties attached to a tenant
+         * - key is the TenantId
+         * - contents are KeyPropertiesReader attached to the tenant
+         */
         public Map<String,List<KeyPropertiesReader>> listTenantsReader = new HashMap<String,List<KeyPropertiesReader>>();
+        /**
+         * List of ContentTypeText. There are no content text per tenant
+         */
         public Map<String, ContentTypeText> mapContentText = new HashMap<String,ContentTypeText>();
         public Map<String, Object> mapCharacteristic = new HashMap<String,Object>();
         public List<Analyse> listAnalyses = new ArrayList<Analyse>();
@@ -106,6 +118,20 @@ public class CollectResult {
                 if (completeName.endsWith(fileName))
                     return mapContentText.get( completeName);
             return null;
+        }
+        
+        public KeyPropertiesReader getKeyPropertiesByFileName(String fileName ) {
+            
+            for (List<KeyPropertiesReader> listKeys : mapKeyPropertiesReader.values() )
+            {
+                for (KeyPropertiesReader keyPropertiesReader : listKeys)
+                {
+                    if (keyPropertiesReader.getFileName().equals(fileName))
+                        return keyPropertiesReader;
+                }
+            }
+            return null;
+                
         }
         
     }
@@ -150,11 +176,11 @@ public class CollectResult {
     
     public void setCollector(String collectorName ) 
     {
-        currentCollector = currentClassCollect.listPropertiesReader.get( collectorName );
+        currentCollector = currentClassCollect.mapKeyPropertiesReader.get( collectorName );
         if (currentCollector==null)
         {
             currentCollector = new ArrayList<KeyPropertiesReader>();
-            currentClassCollect.listPropertiesReader.put( collectorName, currentCollector);
+            currentClassCollect.mapKeyPropertiesReader.put( collectorName, currentCollector);
         }
     }
    
