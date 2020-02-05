@@ -50,7 +50,7 @@ public class CollectOperation {
         
          if (collectParameter.listTypeCollect.contains(TYPECOLLECT.SETUP)) {
              collectResult.setCurrentClassCollect(TYPECOLLECT.SETUP.toString());
-             exploreLevel("/setup/platform_conf/current/", TYPECOLLECT.SETUP, collectResult );
+             exploreLevel("/setup/", TYPECOLLECT.SETUP, collectResult );
          }
          
          if (collectParameter.listTypeCollect.contains(TYPECOLLECT.SERVER)) {

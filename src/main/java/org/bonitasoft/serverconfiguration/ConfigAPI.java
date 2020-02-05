@@ -87,7 +87,7 @@ public class ConfigAPI {
                 }
                 */
                 
-                logger.info("Result setup pull "+resultCommand);
+                logger.info("Result setup pull "+process.exitValue());
                 success=true;
                 break;
             } catch(Exception e ) {
