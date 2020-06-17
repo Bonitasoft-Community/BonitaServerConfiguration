@@ -66,8 +66,8 @@ public class ConfigAPI {
         // System.out.println(Paths.get("").toAbsolutePath().toString());
 
         // String[] args = new String[] { "pull" };
-        File setupFile = new File( this.localBonitaConfig.getRootPath()+"/setup");
-        String[] listCommands = new String[]  {"cmd / c setup.bat pull", "setup.sh pull"};
+        File setupFile = new File( this.localBonitaConfig.getRootPath()+"/setup/");
+        String[] listCommands = new String[]  {"cmd / c setup.bat pull", "./setup.sh pull"};
         boolean success=false;
         for (String command: listCommands)
         {
@@ -75,8 +75,8 @@ public class ConfigAPI {
             {
                 // PlatformSetupApplication.main(args);
                 Runtime rt = Runtime.getRuntime();
-                /* Process process = */ rt.exec(command, null, setupFile);
-                
+                Process process = rt.exec(command, null, setupFile);
+                process.waitFor();
                 
                 // BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
@@ -87,7 +87,7 @@ public class ConfigAPI {
                 }
                 */
                 
-                logger.info("Result setup pull "+resultCommand);
+                logger.info("Result setup pull "+process.exitValue());
                 success=true;
                 break;
             } catch(Exception e ) {

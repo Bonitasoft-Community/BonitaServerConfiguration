@@ -30,20 +30,15 @@ public class CollectResultDecoZip {
 
     }
 
-    public static class ResultZip {
-        public ByteArrayOutputStream zipContent;
-        public List<BEvent> listEvents = new ArrayList<BEvent>();
-    }
-    
     public ResultZip getZip(List<TYPECOLLECT> listTypeCollect) {
         ResultZip resultZip = new ResultZip();
         resultZip.zipContent = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream( resultZip.zipContent );
-        
+
         ResultZip resultZipZos = addToZip( listTypeCollect,zos);
         resultZip.listEvents.addAll( resultZipZos.listEvents);
-        
-        
+
+
         //remember close it
          try {
              zos.close();
@@ -51,33 +46,34 @@ public class CollectResultDecoZip {
              resultZip.listEvents.add( new BEvent( EVENT_ZIP_CLOSE, e, ""));
 
          }
-         
+
          return resultZip;
-        
+
     }
+    
     /**
      * Complete an existing ZipOutStream, to let the caller to add more file in the ZIP
      *
      * @return
      */
-    public ResultZip addToZip(List<TYPECOLLECT> listTypeCollect,ZipOutputStream zos ) {
+    public ResultZip addToZip(List<TYPECOLLECT> listTypeCollect, ZipOutputStream zos) {
 
         ResultZip resultZip = new ResultZip();
-        for (TYPECOLLECT typeCollect : listTypeCollect) 
+        for (TYPECOLLECT typeCollect : listTypeCollect)
         {
             CollectResult.ClassCollect classCollect = collectResult.getClassCollect(typeCollect.toString());
-    
+
             for (String name : classCollect.mapKeyPropertiesReader.keySet()) {
-    
+
                 for (ContentTypeProperties.KeyPropertiesReader keyPropertiesReader : classCollect.mapKeyPropertiesReader.get( name )) {
-                    
+
                     addFileToZip(zos, keyPropertiesReader.getFile(), resultZip);
                 }
             }
-    
-    
+
+
             for (String tenantid : classCollect.listTenantsReader.keySet()) {
-    
+
                 for (ContentTypeProperties.KeyPropertiesReader keyPropertiesReader : classCollect.listTenantsReader.get( tenantid )) {
                     addFileToZip(zos, keyPropertiesReader.getFile(), resultZip);
                 }
@@ -87,20 +83,86 @@ public class CollectResultDecoZip {
                 addFileToZip(zos, classCollect.mapContentText.get(contentFileName).getFile(), resultZip);
             }
         }
-     
+
         return resultZip;
     }
 
-  
-    
-    
+    /**
+     * Complete an existing ZipOutStream, to let the caller to add more file in the ZIP
+     *
+     * @return
+     */
+    public ResultZip addDirectoryToZip(ZipOutputStream zos, File fileToZip, ResultZip resultZip , String parentDirectoryName) {
+
+        // Build the full path of files in the result zip file
+        String completeFilePath = fileToZip.getName();
+        if (parentDirectoryName!=null && parentDirectoryName!="") {
+            completeFilePath = parentDirectoryName + "/" + fileToZip.getName();
+        }
+
+        FileInputStream fis = null;
+        BufferedInputStream bis = null;
+
+        // Use a buffer to speed the zip process
+        byte bytes[] = new byte[10240];
+        if (fileToZip==null)
+        {
+            resultZip.listEvents.add( new BEvent( EVENT_ZIP_ENTRY,"fileName [no file]"));
+            return resultZip;
+        }
+
+        if (fileToZip.isDirectory()) {
+
+            try {
+                // Create a directory in the zip
+                zos.putNextEntry( new ZipEntry( completeFilePath+"/" ) );
+                for (File file : fileToZip.listFiles()) {
+                    addDirectoryToZip( zos, file, resultZip, completeFilePath + "/" + file.getName());
+                }
+            }catch(Exception e) {
+                resultZip.listEvents.add( new BEvent( EVENT_ZIP_ENTRY, e, "DirectoryName [" + completeFilePath+"] - fileName [" + fileToZip.getName() + "]" ) );
+            }
+        } else {
+
+            try {
+                // Create a file in the zip
+                fis = new FileInputStream( fileToZip );
+                bis = new BufferedInputStream( fis );
+
+                zos.putNextEntry( new ZipEntry( completeFilePath ) );
+
+                int bytesRead;
+                while ((bytesRead = bis.read( bytes )) != -1) {
+                    zos.write( bytes, 0, bytesRead );
+                }
+
+            } catch (Exception e) {
+                resultZip.listEvents.add( new BEvent( EVENT_ZIP_ENTRY, e, "fileName [" + completeFilePath + "] - fileName [" + fileToZip.getName() + "]" ) );
+            }
+            try {
+                if (zos != null) {
+                    zos.closeEntry();
+                }
+                if (bis != null) {
+                    bis.close();
+                }
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (Exception e) {
+                resultZip.listEvents.add( new BEvent( EVENT_ZIP_CLOSE_ENTRY, e, "fileName [" + fileToZip.getName() + "]" ) );
+            }
+        }
+        return resultZip;
+    }
+
     /**
      * add the File in the ZIP in construction
      * @param zos
      * @param fileToZip
      * @param resultZip
      */
-    private void addFileToZip(ZipOutputStream zos, File fileToZip, ResultZip resultZip  ) {
+    private void addFileToZip(ZipOutputStream zos, File fileToZip, ResultZip resultZip) {
         FileInputStream fis = null;
         BufferedInputStream bis = null;
         byte bytes[] = new byte[2048];
@@ -135,5 +197,10 @@ public class CollectResultDecoZip {
         } catch (Exception e) {
             resultZip.listEvents.add( new BEvent( EVENT_ZIP_CLOSE_ENTRY, e, "fileName [" + fileToZip.getName()+"]"));
         }
+    }
+
+    public static class ResultZip {
+        public ByteArrayOutputStream zipContent;
+        public List<BEvent> listEvents = new ArrayList<BEvent>();
     }
 }
