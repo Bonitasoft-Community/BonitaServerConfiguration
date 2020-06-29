@@ -1,5 +1,16 @@
-package org.bonitasoft.serverconfiguration;
+package org.bonitasoft.serverconfiguration.analyse;
 
+import org.bonitasoft.serverconfiguration.CollectResult;
+import org.bonitasoft.serverconfiguration.analyse.Analyse.AnalyseRecommendation;
+import org.bonitasoft.serverconfiguration.analyse.Analyse.LEVELRECOMMENDATION;
+
+
+/* ******************************************************************************** */
+/*                                                                                  */
+/*   Analyse Memory                                                                               */
+/*                                                                                  */
+/*                                                                                  */
+/* ******************************************************************************** */
 
 public class AnalyseMemory extends Analyse {
 
