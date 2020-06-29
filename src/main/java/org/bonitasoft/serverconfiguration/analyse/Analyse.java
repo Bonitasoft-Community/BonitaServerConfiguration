@@ -1,10 +1,12 @@
-package org.bonitasoft.serverconfiguration;
+package org.bonitasoft.serverconfiguration.analyse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.bonitasoft.serverconfiguration.CollectResult;
 
 public abstract class Analyse {
 
@@ -14,9 +16,10 @@ public abstract class Analyse {
     
     
     public static List<Analyse> instanciateAllAnalyses() {
-        List<Analyse> listAnalyses = new ArrayList<Analyse>();
+        List<Analyse> listAnalyses = new ArrayList<>();
         listAnalyses.add( new AnalyseMemory() );
         listAnalyses.add( new AnalyseDatasource() );
+        listAnalyses.add( new AnalyseCluster() );
         return listAnalyses;
     }
     /* ******************************************************************************** */
@@ -46,7 +49,7 @@ public abstract class Analyse {
     
     public void setErrorAnalyse(String information, Exception e) 
     {
-        infos.put("Error ", e.getMessage() );
+        infos.put("Error ", "Exception : "+e.toString() );
     }
     /* ******************************************************************************** */
     /*                                                                                  */
