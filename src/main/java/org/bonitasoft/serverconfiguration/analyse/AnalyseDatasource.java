@@ -1,12 +1,15 @@
-package org.bonitasoft.serverconfiguration;
+package org.bonitasoft.serverconfiguration.analyse;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bonitasoft.serverconfiguration.Analyse.AnalyseRecommendation;
+import org.bonitasoft.serverconfiguration.CollectResult;
 import org.bonitasoft.serverconfiguration.CollectOperation.TYPECOLLECT;
 import org.bonitasoft.serverconfiguration.CollectResult.ClassCollect;
+import org.bonitasoft.serverconfiguration.CollectResult.TYPECOLLECTOR;
+import org.bonitasoft.serverconfiguration.analyse.Analyse.AnalyseRecommendation;
+import org.bonitasoft.serverconfiguration.analyse.Analyse.LEVELRECOMMENDATION;
 import org.bonitasoft.serverconfiguration.content.ContentType;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyProperties;
@@ -58,42 +61,68 @@ public class AnalyseDatasource extends Analyse{
                 ContentTypeXml contentXML=  new ContentTypeXml( contentTextServer.getContent() );
             
                 Element nodeConnector= contentXML.getXmlElement("Connector", "protocol","HTTP/1.1");
-                if (nodeConnector!=null) {
+                if (nodeConnector!=null && nodeConnector.getAttribute("maxThreads") !=null) {
                     maxThreads = Long.valueOf( nodeConnector.getAttribute("maxThreads"));
                 }
                 setInfo("Tomcat Thread", maxThreads);
             }
             // get datasource now
             long maxTotalDatasource=0;
-            String infoDatasource="";
+            StringBuilder infoDatasource=new StringBuilder();
             ContentTypeText contentDatasource = classCollect.getContentTextByFileName("bonita.xml");
             if (contentDatasource !=null) {
                 ContentTypeXml contentXML= new ContentTypeXml( contentDatasource.getContent() );
-                Element nodeResource= contentXML.getXmlElement("Resource", "name", "bonitaDS");
+                Element nodeResource= contentXML.getXmlElement("Resource", "name", "bonitaDS"); chercher le rawds
                 if (nodeResource == null)  {
-                    infoDatasource+="Can't found the [bonita.xml] file";
+                    infoDatasource.append( "Can't found [bonitaDS] in [bonita.xml] file" );
                 }else {
                     String factory = nodeResource.getAttribute("factory");
                     if (factory !=null && "bitronix.tm.resource.ResourceObjectFactory".equals(factory)) 
                     {
-                        infoDatasource+="Bitronix usage [bitronix-resources.properties/resource.ds1.maxPoolSize];";
+                        infoDatasource.append( "Bitronix usage [bitronix-resources.properties/resource.ds1.maxPoolSize];" );
                         KeyPropertiesReader contentBitronix = classCollect.getKeyPropertiesByFileName("bitronix-resources.properties");
                         if (contentBitronix == null)
-                            infoDatasource+="Can't found the [bitronix-resources.properties] file";
+                            infoDatasource.append("Can't found the [bitronix-resources.properties] file");
                         else
                             maxTotalDatasource=contentBitronix.getLongValue("resource.ds1.maxPoolSize", 0L);
                     } else {
                         
                         maxTotalDatasource =  Long.valueOf( nodeResource.getAttribute("maxTotal"));
-                        infoDatasource+="Direct datasource usage [bonita.xml/resource.ds1.maxPoolSize/maxTotal]";
+                        infoDatasource.append("Direct datasource usage [bonita.xml/resource.ds1.maxPoolSize/maxTotal]");
                     }
                 } 
             }
-            Map<Long, AnalyseTenant> mapPerTenant = new HashMap<Long,AnalyseTenant>();
-            List<KeyPropertiesReader> keyProperties = classCollect.mapKeyPropertiesReader.get("conf");
-            // search ""
+            Map<Long, AnalyseTenant> mapPerTenant = new HashMap<>();
             long totalQuartz=0;
             
+            
+            KeyPropertiesReader keyPropertiesReader;
+            keyPropertiesReader = classCollect.getKeyPropertiesByFileName("bonita-platform-community-custom.properties");
+            if (keyPropertiesReader != null) {
+                totalQuartz = keyPropertiesReader.getLongValue( "bonita.platform.scheduler.quartz.threadpool.size", 0L );
+            }
+            
+            
+            keyPropertiesReader = classCollect.getKeyPropertiesByFileName("bonita-tenant-community-custom.properties");
+            if (keyPropertiesReader != null) {
+            {
+                AnalyseTenant analysePerTenant = mapPerTenant.get(keyPropertiesReader.getTenantId());
+                if (analysePerTenant == null)
+                    analysePerTenant = new AnalyseTenant();
+                mapPerTenant.put(keyPropertiesReader.getTenantId(), analysePerTenant);
+             
+                analysePerTenant.worker = keyPropertiesReader.getLongValue( "bonita.tenant.work.maximumPoolSize", 0L);
+            }
+             
+            
+            /*List<KeyPropertiesReader> keyProperties = classCollect.mapKeyPropertiesReader.get(TYPECOLLECTOR.conf);
+
+                    if (keyProperties==null)
+                infoDatasource.append("Can't find the ["+TYPECOLLECTOR.conf.toString()+"] items");
+            else
+            // search ""
+            {            
+                
             for (KeyPropertiesReader keyPropertiesReader : keyProperties)
             {
                   
@@ -114,6 +143,7 @@ public class AnalyseDatasource extends Analyse{
                     analysePerTenant.worker = keyPropertiesReader.getLongValue( "bonita.tenant.work.maximumPoolSize", 0L);
                 }
             }
+            }*/
             
             long totalWorker=0;
                    
