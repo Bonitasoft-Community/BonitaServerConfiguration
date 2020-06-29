@@ -111,13 +111,16 @@ public class ContentTypeProperties extends ContentType {
         public String value;
         public boolean isEnable;
         public String comments;
+        public String toString() {
+            return name+"="+value;
+        }
     }
 
     public class KeyPropertiesReader {
 
         File file;
-        public List<KeyProperties> listKeys = new ArrayList<KeyProperties>();
-        public List<BEvent> listEvents = new ArrayList<BEvent>();
+        public List<KeyProperties> listKeys = new ArrayList<>();
+        public List<BEvent> listEvents = new ArrayList<>();
 
         public String getFileName() {
             return file.getName();
@@ -185,6 +188,17 @@ public class ContentTypeProperties extends ContentType {
             }
             return defaultValue;
         }
+        public Boolean getBooleanValue(String name, Boolean defaultValue) {
+            try {
+                for (KeyProperties keyProperties : listKeys) {
+                    if (keyProperties.name.equals(name))
+                        return "true".equalsIgnoreCase( keyProperties.value );
+                }
+            } catch (Exception e) {
+                return defaultValue;
+            }
+            return defaultValue;
+        }
 
         public Map<String, Object> getMap(boolean lineFeedToHtml) {
             Map<String, Object> record = new HashMap<String, Object>();
@@ -225,8 +239,8 @@ public class ContentTypeProperties extends ContentType {
         // bdm.hibernate.transaction.jta_platform=${sysprop.bonita.hibernate.transaction.jta_platform:org.bonitasoft.engine.persistence.Narayana5HibernateJtaPlatform}
         // if the line is one the first form, this is a non enable key. Else, this is a valid key
         // comment is BEFORE this line
-        try {
-            BufferedReader b = new BufferedReader(new FileReader(file));
+        try (BufferedReader b = new BufferedReader(new FileReader(file))) {
+            
 
             String readLine = "";
             String comments = "";

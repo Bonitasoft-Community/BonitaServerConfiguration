@@ -6,10 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bonitasoft.serverconfiguration.Analyse.AnalyseRecommendation;
-import org.bonitasoft.serverconfiguration.Analyse.LEVELRECOMMENDATION;
 import org.bonitasoft.serverconfiguration.CollectOperation.TYPECOLLECT;
 import org.bonitasoft.serverconfiguration.CollectResult.ClassCollect;
+import org.bonitasoft.serverconfiguration.CollectResult.TYPECOLLECTOR;
+import org.bonitasoft.serverconfiguration.analyse.Analyse;
+import org.bonitasoft.serverconfiguration.analyse.Analyse.AnalyseRecommendation;
+import org.bonitasoft.serverconfiguration.analyse.Analyse.LEVELRECOMMENDATION;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties.KeyPropertiesReader;
 
 public class CollectResultDecoMap {
@@ -48,24 +50,23 @@ public class CollectResultDecoMap {
         if (classCollect==null)
             return result;
         if (typeCollect == TYPECOLLECT.ANALYSIS) {
-            List<Map<String, Object>> listAnalysisMap = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> listAnalysisMap = new ArrayList<>();
             result.put("indicators", listAnalysisMap);
             if (classCollect.listAnalyses==null)
                 return result;
             for (Analyse analysis : classCollect.listAnalyses) {
-                Map<String, Object> analysisMap = new HashMap<String, Object>();
+                Map<String, Object> analysisMap = new HashMap<>();
                 listAnalysisMap.add(analysisMap);
                 analysisMap.put("title", analysis.getTitle());
                 analysisMap.put("name", analysis.getName());
-
-                List<Map<String, Object>> listInfoMap = new ArrayList<Map<String, Object>>();
+                
                 analysisMap.put("infos", analysis.getInfos());
-                List<Map<String, Object>> listRecommendataionMap = new ArrayList<Map<String, Object>>();
+                List<Map<String, Object>> listRecommendataionMap = new ArrayList<>();
 
                 analysisMap.put("recommendations", listRecommendataionMap);
                 LEVELRECOMMENDATION indicatorLevel = LEVELRECOMMENDATION.SUCCESS;
                 for (AnalyseRecommendation recommendation : analysis.getRecommendations()) {
-                    Map<String, Object> recommendationMap = new HashMap<String, Object>();
+                    Map<String, Object> recommendationMap = new HashMap<>();
                     listRecommendataionMap.add(recommendationMap);
                     recommendationMap.put("name", recommendation.name);
                     recommendationMap.put("value", recommendation.value);
@@ -85,24 +86,24 @@ public class CollectResultDecoMap {
         if (classCollect == null)
             return result;
 
-        Map<String, Object> listPropertiesMap = new HashMap<String, Object>();
+        Map<String, Object> listPropertiesMap = new HashMap<>();
         result.put("properties", listPropertiesMap);
 
-        for (String name : classCollect.mapKeyPropertiesReader.keySet()) {
-            List<Map<String, Object>> listEngineKeys = new ArrayList<Map<String, Object>>();
-            listPropertiesMap.put(name, listEngineKeys);
+        for (TYPECOLLECTOR name : classCollect.mapKeyPropertiesReader.keySet()) {
+            List<Map<String, Object>> listEngineKeys = new ArrayList<>();
+            listPropertiesMap.put(name.toString(), listEngineKeys);
             for (KeyPropertiesReader keyPropertiesReader : classCollect.mapKeyPropertiesReader.get(name)) {
                 listEngineKeys.add(keyPropertiesReader.getMap(isLineFeedToHtml));
             }
         }
         // tenants now ?
         if (classCollect.listTenantsReader.size() > 0) {
-            Map<String, Object> listTenantMap = new HashMap<String, Object>();
+            Map<String, Object> listTenantMap = new HashMap<>();
             result.put("tenants", listTenantMap);
 
-            for (String tenantid : classCollect.listTenantsReader.keySet()) {
-                List<Map<String, Object>> listEngineKeys = new ArrayList<Map<String, Object>>();
-                listTenantMap.put(tenantid, listEngineKeys);
+            for (Long tenantid : classCollect.listTenantsReader.keySet()) {
+                List<Map<String, Object>> listEngineKeys = new ArrayList<>();
+                listTenantMap.put(String.valueOf(tenantid), listEngineKeys);
                 for (KeyPropertiesReader keyPropertiesReader : classCollect.listTenantsReader.get(tenantid)) {
                     listEngineKeys.add(keyPropertiesReader.getMap(isLineFeedToHtml));
                 }
@@ -110,11 +111,11 @@ public class CollectResultDecoMap {
         }
 
         // content
-        List<Map<String, Object>> listContents = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> listContents = new ArrayList<>();
         result.put("contents", listContents);
 
         for (String contentName : classCollect.mapContentText.keySet()) {
-            Map<String, Object> content = new HashMap<String, Object>();
+            Map<String, Object> content = new HashMap<>();
             content.put("name", contentName);
             content.put("content", classCollect.mapContentText.get(contentName).getContent());
             listContents.add(content);

@@ -22,10 +22,11 @@ public class ConfigAPI {
 
     Logger logger = Logger.getLogger(ConfigAPI.class.getName());
 
-    public static BEvent EVENT_PULLERROR = new BEvent(ConfigAPI.class.getName(), 1, Level.APPLICATIONERROR, "Pull Error", "An error arrived during a setup pull", "Analysis is performed on the last setup pull done", "Check error" );
+    public static BEvent EVENT_PULLERROR = new BEvent(ConfigAPI.class.getName(), 1, Level.APPLICATIONERROR, "Pull Error", "An error arrived during a setup pull", "Analysis is performed on the last setup pull done", "Check error");
 
     /**
-     *  create a ConfigAPI, using a local config. So, the BonitaConfigPath is the local Config API
+     * create a ConfigAPI, using a local config. So, the BonitaConfigPath is the local Config API
+     * 
      * @param rootPath : ROOT of the bundle/Application. under, we have server and config.
      * @return
      */
@@ -34,9 +35,9 @@ public class ConfigAPI {
     }
 
     private BonitaConfigPath localBonitaConfig = null;
-    
+
     private ConfigAPI(BonitaConfigPath localBonitaConfig) {
-        this.localBonitaConfig =localBonitaConfig;
+        this.localBonitaConfig = localBonitaConfig;
 
     }
 
@@ -47,8 +48,6 @@ public class ConfigAPI {
     /*                                                                                  */
     /* ******************************************************************************** */
 
-    
-    
     /**
      * execute a setupPull, to ensure the local configuration is up to date
      * 
@@ -66,39 +65,37 @@ public class ConfigAPI {
         // System.out.println(Paths.get("").toAbsolutePath().toString());
 
         // String[] args = new String[] { "pull" };
-        File setupFile = new File( this.localBonitaConfig.getRootPath()+"/setup/");
-        String[] listCommands = new String[]  {"cmd / c setup.bat pull", "./setup.sh pull"};
-        boolean success=false;
-        for (String command: listCommands)
-        {
-            try
-            {
+        File setupFile = new File(this.localBonitaConfig.getRootPath() + "/setup/");
+        String[] listCommands = new String[] { "cmd / c setup.bat pull", "./setup.sh pull" };
+        boolean success = false;
+        for (String command : listCommands) {
+            try {
                 // PlatformSetupApplication.main(args);
                 Runtime rt = Runtime.getRuntime();
                 Process process = rt.exec(command, null, setupFile);
                 process.waitFor();
-                
+
                 // BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-                String resultCommand="";
-                /*String s = null;
-                while ((s = stdInput.readLine()) != null) {
-                    resultCommand+=s;
-                }
-                */
-                
-                logger.info("Result setup pull "+process.exitValue());
-                success=true;
+                String resultCommand = "";
+                /*
+                 * String s = null;
+                 * while ((s = stdInput.readLine()) != null) {
+                 * resultCommand+=s;
+                 * }
+                 */
+
+                logger.info("Result setup pull " + process.exitValue());
+                success = true;
                 break;
-            } catch(Exception e ) {
+            } catch (Exception e) {
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
                 String exceptionDetails = sw.toString();
-                listErrors.add( new BEvent( EVENT_PULLERROR, e,  "Command["+command+"] User dir["+setupFile.getAbsolutePath()+"] " + e.getMessage() + " at " + exceptionDetails));
+                listErrors.add(new BEvent(EVENT_PULLERROR, e, "Command[" + command + "] User dir[" + setupFile.getAbsolutePath() + "] " + e.getMessage() + " at " + exceptionDetails));
             }
         }
-        if (! success)
-        {
+        if (!success) {
             listEvents.addAll(listErrors);
         }
         return listEvents;
@@ -114,46 +111,46 @@ public class ConfigAPI {
     public static class CollectParameter {
 
         public Set<TYPECOLLECT> listTypeCollect = new HashSet<TYPECOLLECT>();
-        
-        public boolean hidePassword=true;
-        public boolean useLocalFile=true;
-        public File localFile=null;
-        public long tenantId =1;
-        
-        public static CollectParameter getInstanceFromMap(Map<String,Object> parameters) {
+
+        public boolean hidePassword = true;
+        public boolean useLocalFile = true;
+        public boolean doSetupPull = true;
+        public File localFile = null;
+        public long tenantId = 1;
+
+        public static CollectParameter getInstanceFromMap(Map<String, Object> parameters) {
             CollectParameter comparaisonParameter = new CollectParameter();
-            comparaisonParameter.listTypeCollect = new HashSet<TYPECOLLECT>();
-            
+            comparaisonParameter.listTypeCollect = new HashSet<>();
+
             if (getBoolean(parameters.get("collectSetup"), false))
-                comparaisonParameter.listTypeCollect.add( TYPECOLLECT.SETUP);
+                comparaisonParameter.listTypeCollect.add(TYPECOLLECT.SETUP);
             if (getBoolean(parameters.get("collectServer"), false))
-                comparaisonParameter.listTypeCollect.add( TYPECOLLECT.SERVER);
-            if ( getBoolean(parameters.get("collectAnalysis"), false))
-            comparaisonParameter.listTypeCollect.add( TYPECOLLECT.ANALYSIS);
-            
+                comparaisonParameter.listTypeCollect.add(TYPECOLLECT.SERVER);
+            if (getBoolean(parameters.get("collectAnalysis"), false))
+                comparaisonParameter.listTypeCollect.add(TYPECOLLECT.ANALYSIS);
+
             comparaisonParameter.useLocalFile = getBoolean(parameters.get("useLocalFile"), true);
-            
+            comparaisonParameter.doSetupPull = getBoolean(parameters.get("doSetupPull"), true);
+
             if (parameters.containsKey("localFile"))
-                comparaisonParameter.localFile = new File( (String) parameters.get("localFile"));
-            
+                comparaisonParameter.localFile = new File((String) parameters.get("localFile"));
+
             return comparaisonParameter;
         }
-       
+
     }
 
-   /**
-    * 
-    * @param localConfig
-    * @param collectParameter
-    * @param logStrategy
-    * @return
-    */
-    public CollectResult collectParameters( CollectParameter collectParameter, COLLECTLOGSTRATEGY logStrategy) {
+    /**
+     * @param localConfig
+     * @param collectParameter
+     * @param logStrategy
+     * @return
+     */
+    public CollectResult collectParameters(CollectParameter collectParameter, COLLECTLOGSTRATEGY logStrategy) {
 
         CollectOperation collectOperation = new CollectOperation();
         return collectOperation.collectParameters(localBonitaConfig, collectParameter, logStrategy);
     }
-    
 
     /* ******************************************************************************** */
     /*                                                                                  */
@@ -164,47 +161,48 @@ public class ConfigAPI {
     public static class ComparaisonParameter {
 
         public boolean compareContextXml = false;
-        public boolean ignoreImage=false;
+        public boolean ignoreImage = false;
         public boolean ignoreBonitaTranslationFile = false;
-        public boolean ignoreTemp=false;
-        public boolean ignoreLog=false;
-        public boolean ignoreLicence=true;
-        public boolean ignoreSetup=false;
-        public boolean ignoreDeferedJs=true;
+        public boolean ignoreTemp = false;
+        public boolean ignoreLog = false;
+        public boolean ignoreLicence = true;
+        public boolean ignoreSetup = false;
+        public boolean ignoreDeferedJs = true;
         public boolean referentielIsABundle = true;
-        
-        public boolean useLocalFile=true;
+
+        public boolean useLocalFile = true;
+        public boolean doSetupPull = true;
         public File localFile;
         public File referenceFile;
-        
-        public static ComparaisonParameter getInstanceFromMap(Map<String,Object> parameters) {
+
+        public static ComparaisonParameter getInstanceFromMap(Map<String, Object> parameters) {
             ComparaisonParameter comparaisonParameter = new ComparaisonParameter();
             comparaisonParameter.compareContextXml = getBoolean(parameters.get("compareContextXml"), false);
             comparaisonParameter.ignoreImage = getBoolean(parameters.get("ignoreImage"), true);
             comparaisonParameter.ignoreBonitaTranslationFile = getBoolean(parameters.get("ignoreBonitaTranslationFile"), true);
-            comparaisonParameter.ignoreTemp = getBoolean( parameters.get("ignoreTemp"), true);
-            comparaisonParameter.ignoreLicence = getBoolean( parameters.get("ignoreLicence"), true);
-            comparaisonParameter.ignoreSetup = getBoolean( parameters.get("ignoreSetup"), true);
-            comparaisonParameter.ignoreDeferedJs = getBoolean( parameters.get("ignoreDeferedJs"), true);
-            comparaisonParameter.useLocalFile = getBoolean( parameters.get("useLocalFile"), true);
-            comparaisonParameter.referentielIsABundle = getBoolean( parameters.get("referentielIsABundle"), true);
+            comparaisonParameter.ignoreTemp = getBoolean(parameters.get("ignoreTemp"), true);
+            comparaisonParameter.ignoreLicence = getBoolean(parameters.get("ignoreLicence"), true);
+            comparaisonParameter.ignoreSetup = getBoolean(parameters.get("ignoreSetup"), true);
+            comparaisonParameter.ignoreDeferedJs = getBoolean(parameters.get("ignoreDeferedJs"), true);
+            comparaisonParameter.useLocalFile = getBoolean(parameters.get("useLocalFile"), true);
+            comparaisonParameter.doSetupPull = getBoolean(parameters.get("doSetupPull"), true);
+            comparaisonParameter.referentielIsABundle = getBoolean(parameters.get("referentielIsABundle"), true);
 
-            comparaisonParameter.localFile = new File( (String) parameters.get("comparaisonFile"));
-            comparaisonParameter.referenceFile = new File( (String) parameters.get("referenceFile"));
-            
+            comparaisonParameter.localFile = new File((String) parameters.get("comparaisonFile"));
+            comparaisonParameter.referenceFile = new File((String) parameters.get("referenceFile"));
+
             return comparaisonParameter;
         }
-        public static boolean getBoolean(Object value, boolean defaultValue ) { 
-            if (value==null)
+
+        public static boolean getBoolean(Object value, boolean defaultValue) {
+            if (value == null)
                 return defaultValue;
             try {
-                return Boolean.valueOf( value.toString() );
-            }
-            catch(Exception e)
-            {
+                return Boolean.valueOf(value.toString());
+            } catch (Exception e) {
                 return defaultValue;
             }
-            
+
         }
     }
 
@@ -215,10 +213,9 @@ public class ConfigAPI {
 
     public ComparaisonResult compareWithReferentiel(BonitaConfig referentiel, ComparaisonParameter comparaisonParameter, LOGSTRATEGY logStrategy) {
 
-        ComparaisonOperation comparaisonOperation = new ComparaisonOperation( );
+        ComparaisonOperation comparaisonOperation = new ComparaisonOperation();
         return comparaisonOperation.compareWithReferentiel(localBonitaConfig, referentiel, comparaisonParameter, logStrategy);
     }
-
 
     /* ******************************************************************************** */
     /*                                                                                  */
@@ -227,20 +224,18 @@ public class ConfigAPI {
     /*                                                                                  */
     /* ******************************************************************************** */
 
-
     protected static File getFolder(File folder, String subPath) {
         return new File(folder.getAbsolutePath() + subPath);
     }
-    private static boolean getBoolean(Object value, boolean defaultValue ) { 
-        if (value==null)
+
+    private static boolean getBoolean(Object value, boolean defaultValue) {
+        if (value == null)
             return defaultValue;
         try {
-            return Boolean.valueOf( value.toString() );
-        }
-        catch(Exception e)
-        {
+            return Boolean.valueOf(value.toString());
+        } catch (Exception e) {
             return defaultValue;
         }
-        
+
     }
 }

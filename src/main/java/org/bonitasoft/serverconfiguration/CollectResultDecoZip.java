@@ -3,6 +3,7 @@ package org.bonitasoft.serverconfiguration;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.serverconfiguration.content.ContentTypeProperties;
 import org.bonitasoft.serverconfiguration.CollectOperation.TYPECOLLECT;
+import org.bonitasoft.serverconfiguration.CollectResult.TYPECOLLECTOR;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -14,10 +15,10 @@ import java.util.zip.ZipOutputStream;
 
 public class CollectResultDecoZip {
 
-    public static BEvent EVENT_ZIP_ENTRY = new BEvent( CollectResultDecoZip.class.getName(), 1, BEvent.Level.ERROR, "Zip Error", "An severe error when zipping a file", "This file won't be in the final zip", "Check this file" );
-    public static BEvent EVENT_ZIP_CLOSE_ENTRY = new BEvent( CollectResultDecoZip.class.getName(), 2, BEvent.Level.ERROR, "Close Zip Entry Error", "An severe error during zipping a file", "This file is probably corrupt", "Check the error" );
+    private final static BEvent EVENT_ZIP_ENTRY = new BEvent( CollectResultDecoZip.class.getName(), 1, BEvent.Level.ERROR, "Zip Error", "An severe error when zipping a file", "This file won't be in the final zip", "Check this file" );
+    private final static BEvent EVENT_ZIP_CLOSE_ENTRY = new BEvent( CollectResultDecoZip.class.getName(), 2, BEvent.Level.ERROR, "Close Zip Entry Error", "An severe error during zipping a file", "This file is probably corrupt", "Check the error" );
     
-    public static BEvent EVENT_ZIP_CLOSE = new BEvent( CollectResultDecoZip.class.getName(), 3, BEvent.Level.ERROR, "Close Zip Error", "An severe error during closing zip file", "This file is probably corrupt", "Check the error" );
+    private final static BEvent EVENT_ZIP_CLOSE = new BEvent( CollectResultDecoZip.class.getName(), 3, BEvent.Level.ERROR, "Close Zip Error", "An severe error during closing zip file", "This file is probably corrupt", "Check the error" );
 
     private CollectResult collectResult;
     
@@ -63,7 +64,7 @@ public class CollectResultDecoZip {
         {
             CollectResult.ClassCollect classCollect = collectResult.getClassCollect(typeCollect.toString());
 
-            for (String name : classCollect.mapKeyPropertiesReader.keySet()) {
+            for (TYPECOLLECTOR name : classCollect.mapKeyPropertiesReader.keySet()) {
 
                 for (ContentTypeProperties.KeyPropertiesReader keyPropertiesReader : classCollect.mapKeyPropertiesReader.get( name )) {
 
@@ -72,7 +73,7 @@ public class CollectResultDecoZip {
             }
 
 
-            for (String tenantid : classCollect.listTenantsReader.keySet()) {
+            for (Long tenantid : classCollect.listTenantsReader.keySet()) {
 
                 for (ContentTypeProperties.KeyPropertiesReader keyPropertiesReader : classCollect.listTenantsReader.get( tenantid )) {
                     addFileToZip(zos, keyPropertiesReader.getFile(), resultZip);
@@ -94,22 +95,22 @@ public class CollectResultDecoZip {
      */
     public ResultZip addDirectoryToZip(ZipOutputStream zos, File fileToZip, ResultZip resultZip , String parentDirectoryName) {
 
-        // Build the full path of files in the result zip file
-        String completeFilePath = fileToZip.getName();
-        if (parentDirectoryName!=null && parentDirectoryName!="") {
-            completeFilePath = parentDirectoryName + "/" + fileToZip.getName();
-        }
-
-        FileInputStream fis = null;
-        BufferedInputStream bis = null;
-
-        // Use a buffer to speed the zip process
-        byte bytes[] = new byte[10240];
         if (fileToZip==null)
         {
             resultZip.listEvents.add( new BEvent( EVENT_ZIP_ENTRY,"fileName [no file]"));
             return resultZip;
         }
+        // Build the full path of files in the result zip file
+        String completeFilePath = fileToZip.getName();
+        if (parentDirectoryName!=null && ! parentDirectoryName.isEmpty()) {
+            completeFilePath = parentDirectoryName + "/" + fileToZip.getName();
+        }
+
+
+        BufferedInputStream bis = null;
+
+        // Use a buffer to speed the zip process
+        byte[] bytes = new byte[10240];
 
         if (fileToZip.isDirectory()) {
 
@@ -124,9 +125,9 @@ public class CollectResultDecoZip {
             }
         } else {
 
-            try {
+            try (FileInputStream fis = new FileInputStream( fileToZip )){
                 // Create a file in the zip
-                fis = new FileInputStream( fileToZip );
+                
                 bis = new BufferedInputStream( fis );
 
                 zos.putNextEntry( new ZipEntry( completeFilePath ) );
@@ -146,9 +147,6 @@ public class CollectResultDecoZip {
                 if (bis != null) {
                     bis.close();
                 }
-                if (fis != null) {
-                    fis.close();
-                }
             } catch (Exception e) {
                 resultZip.listEvents.add( new BEvent( EVENT_ZIP_CLOSE_ENTRY, e, "fileName [" + fileToZip.getName() + "]" ) );
             }
@@ -163,16 +161,16 @@ public class CollectResultDecoZip {
      * @param resultZip
      */
     private void addFileToZip(ZipOutputStream zos, File fileToZip, ResultZip resultZip) {
-        FileInputStream fis = null;
+
         BufferedInputStream bis = null;
-        byte bytes[] = new byte[2048];
+        byte[] bytes = new byte[2048];
         if (fileToZip==null)
         {
             resultZip.listEvents.add( new BEvent( EVENT_ZIP_ENTRY,"fileName [no file]"));
             return;
         }
-        try {
-            fis = new FileInputStream( fileToZip );
+        try (FileInputStream fis = new FileInputStream( fileToZip )){
+            
             bis = new BufferedInputStream( fis );
 
             zos.putNextEntry( new ZipEntry( fileToZip.getName() ) );
@@ -190,9 +188,6 @@ public class CollectResultDecoZip {
             }
             if (bis != null) {
                 bis.close();
-            }
-            if (fis != null) {
-                fis.close();
             }
         } catch (Exception e) {
             resultZip.listEvents.add( new BEvent( EVENT_ZIP_CLOSE_ENTRY, e, "fileName [" + fileToZip.getName()+"]"));
