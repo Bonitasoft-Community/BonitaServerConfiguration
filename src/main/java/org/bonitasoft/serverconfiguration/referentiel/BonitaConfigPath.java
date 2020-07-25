@@ -10,9 +10,9 @@ import org.bonitasoft.serverconfiguration.content.ContentPath;
 
 public class BonitaConfigPath extends BonitaConfig {
 
-    public static BEvent EVENT_ROOTPATHNOTEXIST  = new BEvent(BonitaConfigPath.class.getName(), 1, Level.APPLICATIONERROR,
-                    "Path not exist", "The path given to describe a Bonita installation does not exist",
-                    "Comparaison can't works", "Give a correct path");
+    public static BEvent eventRootPathNotExists  = new BEvent(BonitaConfigPath.class.getName(), 1, Level.APPLICATIONERROR,
+                    "Path not exist", "The path (directory) given to describe a Bonita installation does not exists",
+                    "Comparaison can't works", "Give a correct path (directory)");
 
     public static BonitaConfigPath getInstance(File rootPath) {
         return new BonitaConfigPath(rootPath);
@@ -31,9 +31,9 @@ public class BonitaConfigPath extends BonitaConfig {
     }
 
     public List<BEvent> initialisation() {
-        List<BEvent> listEvents = new ArrayList<BEvent>();
-        if (! rootPath.exists())
-            listEvents.add( new BEvent(EVENT_ROOTPATHNOTEXIST, "Path ["+rootPath.getAbsolutePath()+"]"));
+        List<BEvent> listEvents = new ArrayList<>();
+        if (! rootPath.exists() || ! rootPath.isAbsolute())
+            listEvents.add( new BEvent(eventRootPathNotExists, "Path ["+rootPath.getAbsolutePath()+"]"));
         return listEvents;
 
     }

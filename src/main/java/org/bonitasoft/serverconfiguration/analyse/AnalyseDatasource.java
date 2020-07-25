@@ -72,9 +72,12 @@ public class AnalyseDatasource extends Analyse{
             ContentTypeText contentDatasource = classCollect.getContentTextByFileName("bonita.xml");
             if (contentDatasource !=null) {
                 ContentTypeXml contentXML= new ContentTypeXml( contentDatasource.getContent() );
-                Element nodeResource= contentXML.getXmlElement("Resource", "name", "bonitaDS"); chercher le rawds
+                Element nodeResource= contentXML.getXmlElement("Resource", "name", "bonitaDS"); // look for the rawDataDS
                 if (nodeResource == null)  {
-                    infoDatasource.append( "Can't found [bonitaDS] in [bonita.xml] file" );
+                    nodeResource= contentXML.getXmlElement("Resource", "name", "RawBonitaDS"); // look for the rawDataDS
+                }
+                if (nodeResource == null)  {
+                    infoDatasource.append( "Can't found [bonitaDS] or [RawBonitaDS] in [bonita.xml] file" );
                 }else {
                     String factory = nodeResource.getAttribute("factory");
                     if (factory !=null && "bitronix.tm.resource.ResourceObjectFactory".equals(factory)) 
@@ -105,7 +108,6 @@ public class AnalyseDatasource extends Analyse{
             
             keyPropertiesReader = classCollect.getKeyPropertiesByFileName("bonita-tenant-community-custom.properties");
             if (keyPropertiesReader != null) {
-            {
                 AnalyseTenant analysePerTenant = mapPerTenant.get(keyPropertiesReader.getTenantId());
                 if (analysePerTenant == null)
                     analysePerTenant = new AnalyseTenant();

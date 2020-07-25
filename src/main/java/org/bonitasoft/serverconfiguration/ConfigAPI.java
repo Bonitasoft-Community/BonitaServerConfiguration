@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import org.bonitasoft.log.event.BEvent;
@@ -22,7 +23,8 @@ public class ConfigAPI {
 
     Logger logger = Logger.getLogger(ConfigAPI.class.getName());
 
-    public static BEvent EVENT_PULLERROR = new BEvent(ConfigAPI.class.getName(), 1, Level.APPLICATIONERROR, "Pull Error", "An error arrived during a setup pull", "Analysis is performed on the last setup pull done", "Check error");
+    public static BEvent eventPullError = new BEvent(ConfigAPI.class.getName(), 1, Level.APPLICATIONERROR, "Pull Error", "An error arrived during a setup pull", "Analysis is performed on the last setup pull done", "Check error");
+    public static BEvent eventPullTimeout = new BEvent(ConfigAPI.class.getName(), 2, Level.APPLICATIONERROR, "Pull Timeout", "setup pull does not return in the waiting time", "Setup can't be checjout from the server", "Check the setup command");
 
     /**
      * create a ConfigAPI, using a local config. So, the BonitaConfigPath is the local Config API
@@ -54,8 +56,8 @@ public class ConfigAPI {
      * @return
      */
     public List<BEvent> setupPull() {
-        List<BEvent> listEvents = new ArrayList<BEvent>();
-        List<BEvent> listErrors = new ArrayList<BEvent>();
+        List<BEvent> listEvents = new ArrayList<>();
+        List<BEvent> listErrors = new ArrayList<>();
 
         // change the current directory to this.rootPath/setup
         //System.out.println(System.getProperty("user.dir"));
@@ -66,33 +68,54 @@ public class ConfigAPI {
 
         // String[] args = new String[] { "pull" };
         File setupFile = new File(this.localBonitaConfig.getRootPath() + "/setup/");
-        String[] listCommands = new String[] { "cmd / c setup.bat pull", "./setup.sh pull" };
+        String[] listCommands = new String[] { "cmd /c setup.bat pull", "./setup.sh pull" };
         boolean success = false;
         for (String command : listCommands) {
             try {
                 // PlatformSetupApplication.main(args);
                 Runtime rt = Runtime.getRuntime();
+                
+            
+            
                 Process process = rt.exec(command, null, setupFile);
-                process.waitFor();
+                Worker worker = new Worker(process);
+                worker.start();
+                try {
+                  worker.join(20000);
+                  if (worker.exit != null)
+                  {
+                      logger.info("Result setup pull " + process.exitValue());
+                      success = true;
+                      break;
+                  }
+                  else {
+                      listEvents.add(new BEvent(eventPullTimeout, "Timeout: 20 s"));
+                      throw new TimeoutException();
+                  }
+                } catch(InterruptedException ex) {
+                  worker.interrupt();
+                  Thread.currentThread().interrupt();
+                } finally {
+                  process.destroyForcibly();
+                }
+              
 
                 // BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-                String resultCommand = "";
+
                 /*
+                 * String resultCommand = "";
                  * String s = null;
                  * while ((s = stdInput.readLine()) != null) {
                  * resultCommand+=s;
                  * }
                  */
 
-                logger.info("Result setup pull " + process.exitValue());
-                success = true;
-                break;
             } catch (Exception e) {
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
                 String exceptionDetails = sw.toString();
-                listErrors.add(new BEvent(EVENT_PULLERROR, e, "Command[" + command + "] User dir[" + setupFile.getAbsolutePath() + "] " + e.getMessage() + " at " + exceptionDetails));
+                listErrors.add(new BEvent(eventPullError, e, "Command[" + command + "] User dir[" + setupFile.getAbsolutePath() + "] " + e.getMessage() + " at " + exceptionDetails));
             }
         }
         if (!success) {
@@ -100,6 +123,27 @@ public class ConfigAPI {
         }
         return listEvents;
     }
+
+    
+/**
+ * Monitor Thread 
+ * @author Firstname Lastname
+ *
+ */
+private static class Worker extends Thread {
+  private final Process process;
+  private Integer exit;
+  private Worker(Process process) {
+    this.process = process;
+  }
+  public void run() {
+    try { 
+      exit = process.waitFor();
+    } catch (InterruptedException ignore) {
+      return;
+    }
+  }  
+}
 
     /* ******************************************************************************** */
     /*                                                                                  */
@@ -168,13 +212,18 @@ public class ConfigAPI {
         public boolean ignoreLicence = true;
         public boolean ignoreSetup = false;
         public boolean ignoreDeferedJs = true;
+        
+        // Referentiel
         public boolean referentielIsABundle = true;
-
-        public boolean useLocalFile = true;
-        public boolean doSetupPull = true;
-        public File localFile;
         public File referenceFile;
 
+        // application to compare
+        public boolean useLocalServer = true;
+        public File applicationFile;
+        public boolean doSetupPull = true;
+        
+        
+        
         public static ComparaisonParameter getInstanceFromMap(Map<String, Object> parameters) {
             ComparaisonParameter comparaisonParameter = new ComparaisonParameter();
             comparaisonParameter.compareContextXml = getBoolean(parameters.get("compareContextXml"), false);
@@ -184,12 +233,17 @@ public class ConfigAPI {
             comparaisonParameter.ignoreLicence = getBoolean(parameters.get("ignoreLicence"), true);
             comparaisonParameter.ignoreSetup = getBoolean(parameters.get("ignoreSetup"), true);
             comparaisonParameter.ignoreDeferedJs = getBoolean(parameters.get("ignoreDeferedJs"), true);
-            comparaisonParameter.useLocalFile = getBoolean(parameters.get("useLocalFile"), true);
-            comparaisonParameter.doSetupPull = getBoolean(parameters.get("doSetupPull"), true);
+            
+            // Reference
             comparaisonParameter.referentielIsABundle = getBoolean(parameters.get("referentielIsABundle"), true);
+            if (parameters.get("referenceFile")!=null)
+                comparaisonParameter.referenceFile = new File((String) parameters.get("referenceFile"));
 
-            comparaisonParameter.localFile = new File((String) parameters.get("comparaisonFile"));
-            comparaisonParameter.referenceFile = new File((String) parameters.get("referenceFile"));
+            // application
+            comparaisonParameter.useLocalServer = getBoolean(parameters.get("useLocalServer"), true);
+            if (parameters.get("applicationFile") !=null)
+                comparaisonParameter.applicationFile = new File((String) parameters.get("applicationFile"));
+            comparaisonParameter.doSetupPull = getBoolean(parameters.get("doSetupPull"), true);
 
             return comparaisonParameter;
         }

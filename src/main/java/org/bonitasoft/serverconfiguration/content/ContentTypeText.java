@@ -81,7 +81,7 @@ public class ContentTypeText extends ContentType {
             reportDeltas(getLevel(), fileReferentiel, fileLocal, patch.getDeltas(), comparaisonResult);
 
         } catch (DiffException e) {
-            comparaisonResult.reportError(fileLocal, e, "Calcul difference");
+
         }
     }
 

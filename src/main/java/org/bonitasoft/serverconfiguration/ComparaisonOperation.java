@@ -18,12 +18,12 @@ import org.bonitasoft.serverconfiguration.referentiel.BonitaConfig;
 import org.bonitasoft.serverconfiguration.referentiel.BonitaConfigPath;
 
 public class ComparaisonOperation {
-    
+
     ComparaisonParameter comparaisonParameter;
     BonitaConfigPath localBonitaConfig;
     BonitaConfig referentiel;
     ComparaisonResult comparaisonResult;
-    
+
     /**
      * IDENTICAL : referentiel and LOCAL must be identical. Example, setup must have same files
      * LOCALFIRST : what may exist in the referencel is not so important, but LOCAL must be point.
@@ -36,37 +36,33 @@ public class ComparaisonOperation {
         IDENTICAL, LOCALFIRST
     }
 
-
     public ComparaisonResult compareWithReferentiel(BonitaConfigPath localBonitaConfig, BonitaConfig referentiel, ComparaisonParameter comparaisonParameter, LOGSTRATEGY logStrategy) {
 
-            comparaisonResult = new ComparaisonResult(localBonitaConfig.getRootPath(), logStrategy);
+        comparaisonResult = new ComparaisonResult(localBonitaConfig.getRootPath(), logStrategy);
         this.comparaisonParameter = comparaisonParameter;
         this.localBonitaConfig = localBonitaConfig;
         this.referentiel = referentiel;
-        comparaisonResult.listEvents.addAll( referentiel.initialisation());
-
+        comparaisonResult.listEvents.addAll(referentiel.initialisation());
 
         if (!this.localBonitaConfig.getRootPath().exists()) {
             comparaisonResult.report(this.localBonitaConfig.getRootPath(), DIFFERENCESTATUS.ERROR, DIFFERENCELEVEL.CRITICAL, " DirectoryLocal [" + this.localBonitaConfig.getRootPath().getAbsolutePath() + "] does not exist");
             return comparaisonResult;
         }
-        if (BEventFactory.isError( comparaisonResult.listEvents)) {
+        if (BEventFactory.isError(comparaisonResult.listEvents)) {
             return comparaisonResult;
         }
         // initialise the local repository now
         this.localBonitaConfig.initialisation();
-        
+
         comparaisonResult.startComparaison();
         compareLevel(File.separator, null, COMPARAISONPOLICY.IDENTICAL);
         comparaisonResult.endComparaison();
 
-        
         return comparaisonResult;
     }
 
     private List<String> listFilesIgnore = Arrays.asList("catalina.pid");
 
- 
     /**
      * compare a level
      * 
@@ -75,37 +71,33 @@ public class ComparaisonOperation {
      */
     private void compareLevel(String relativeLocalFolderPath, String relativeReferenceFolderPath, COMPARAISONPOLICY comparaisonPolicy) {
         try {
-            
-            
+
             comparaisonResult.info("----- Check [" + relativeLocalFolderPath + "] " + (relativeReferenceFolderPath != null ? " <->[" + relativeReferenceFolderPath + "]" : ""));
             // calculate the Local Complete Folder Path
             File localFolderPath = ConfigAPI.getFolder(this.localBonitaConfig.getRootPath(), relativeLocalFolderPath);
 
             // this may arrive when we expect some directory, like  "current/platform_engine"
-            if (! localFolderPath.exists())
-            {
-                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY,  DIFFERENCELEVEL.IMPORTANT, "Directory [" + localFolderPath.getAbsolutePath() + "]");
+            if (!localFolderPath.exists()) {
+                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY, DIFFERENCELEVEL.IMPORTANT, "Directory [" + localFolderPath.getAbsolutePath() + "]");
                 return;
             }
-            
+
             // ignore a temporaty folder
-            if (localFolderPath.isDirectory() 
-                    && comparaisonParameter.ignoreTemp 
-                    && ( localFolderPath.getAbsolutePath().endsWith("temp") || localFolderPath.getAbsolutePath().endsWith("tmp")))
+            if (localFolderPath.isDirectory()
+                    && comparaisonParameter.ignoreTemp
+                    && (localFolderPath.getAbsolutePath().endsWith("temp") || localFolderPath.getAbsolutePath().endsWith("tmp")))
                 return;
             // ignore the deferedJs
             if (BonitaConfig.checkLocalisation(localFolderPath, "server/webapps/bonita/portal/deferredjs") && comparaisonParameter.ignoreDeferedJs) {
                 return;
             }
-            
-            
+
             ContentPath refContent = referentiel.getContentLevel(relativeReferenceFolderPath == null ? relativeLocalFolderPath : relativeReferenceFolderPath);
-            if (! refContent.isContentExist())
-            {
-                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY,  DIFFERENCELEVEL.IMPORTANT, "Directory [" + (relativeReferenceFolderPath == null ? relativeLocalFolderPath : relativeReferenceFolderPath) + "]");
+            if (!refContent.isContentExist()) {
+                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY, DIFFERENCELEVEL.IMPORTANT, "Directory [" + (relativeReferenceFolderPath == null ? relativeLocalFolderPath : relativeReferenceFolderPath) + "]");
                 return;
             }
-          
+
             ContentPath localContent = this.localBonitaConfig.getContentLevel(relativeLocalFolderPath);
             // this content does not exist in the referentiel, no need to go under
             if (!refContent.isContentExist()) {
@@ -121,19 +113,19 @@ public class ComparaisonOperation {
                             continue;
                         if (refFile.getAbsolutePath().endsWith(".lic") && comparaisonParameter.ignoreLicence)
                             continue;
-                        
+
                         // get the level of the missing file
                         DIFFERENCELEVEL level = DIFFERENCELEVEL.IMPORTANT;
                         ContentType contentType = ContentType.getContentType(refFile);
-                        level= (contentType == null? DIFFERENCELEVEL.IMPORTANT : contentType.getLevel());
-                    
-                        comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY,  level,  (refFile.isDirectory()? "Directory":"File")+" [" + refFile.getName() + "]");
+                        level = (contentType == null ? DIFFERENCELEVEL.IMPORTANT : contentType.getLevel());
+
+                        comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY, level, (refFile.isDirectory() ? "Directory" : "File") + " [" + refFile.getName() + "]");
                         continue;
                     }
                     if (refFile.isDirectory() && localFile.isDirectory())
                         continue;
                     else if (refFile.isDirectory() || localFile.isDirectory())
-                        comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.DIFFERENT,  DIFFERENCELEVEL.IMPORTANT,  "Referentiel isFolder? " + refFile.isDirectory() + " localIsFolder?" + localFile.isDirectory());
+                        comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.DIFFERENT, DIFFERENCELEVEL.IMPORTANT, "Referentiel isFolder? " + refFile.isDirectory() + " localIsFolder?" + localFile.isDirectory());
                     else {
                         // compare the file itself now                    
                         refContent.compareFile(refFile, localFile, comparaisonParameter, comparaisonResult);
@@ -148,13 +140,13 @@ public class ComparaisonOperation {
                         continue;
                     if (localFile.getAbsolutePath().endsWith(".log") && comparaisonParameter.ignoreLog)
                         continue;
-                    
+
                     // get the level of the missing file
                     DIFFERENCELEVEL level = DIFFERENCELEVEL.IMPORTANT;
                     ContentType contentType = ContentType.getContentType(localFile);
-                    level= (contentType == null? DIFFERENCELEVEL.IMPORTANT : contentType.getLevel());
-                    
-                    comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY,  level, (localFile.isDirectory()? "Directory":"File")+ " [" + localFile.getName() + "]");
+                    level = (contentType == null ? DIFFERENCELEVEL.IMPORTANT : contentType.getLevel());
+
+                    comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY, level, (localFile.isDirectory() ? "Directory" : "File") + " [" + localFile.getName() + "]");
                     continue;
                 }
             }
@@ -165,9 +157,8 @@ public class ComparaisonOperation {
                 return;
             }
             if (BonitaConfig.checkLocalisation(localFolderPath, "/setup/platform_conf") && comparaisonParameter.referentielIsABundle) {
-                    // explore the setup
-                    
-                    
+                // explore the setup
+
                 // only the path current is necessary to check
                 compareLevel(relativeLocalFolderPath + "current/platform_engine", relativeLocalFolderPath + "initial/platform_engine", comparaisonPolicy);
                 compareLevel(relativeLocalFolderPath + "current/platform_portal", relativeLocalFolderPath + "initial/platform_portal", comparaisonPolicy);
@@ -178,7 +169,7 @@ public class ComparaisonOperation {
                     comparaisonResult.info("No active tenants");
                 } else {
                     for (String tenantId : listTenants.list()) {
-                        File folderTenant =  ConfigAPI.getFolder(listTenants, "/" + tenantId);
+                        File folderTenant = ConfigAPI.getFolder(listTenants, "/" + tenantId);
 
                         comparaisonResult.info("------- check tenant " + folderTenant.getName());
                         compareLevel(relativeLocalFolderPath + "current/tenants/" + tenantId + "/tenant_engine", relativeLocalFolderPath + "initial/tenant_template_engine", comparaisonPolicy);
@@ -186,15 +177,14 @@ public class ComparaisonOperation {
                         compareLevel(relativeLocalFolderPath + "current/tenants/" + tenantId + "/tenant_security_scripts", relativeLocalFolderPath + "initial/tenant_template_security_scripts", COMPARAISONPOLICY.LOCALFIRST);
                     }
                 }
-            
-                
-             } else if (BonitaConfig.checkLocalisation(localFolderPath, "webapps")) {
+
+            } else if (BonitaConfig.checkLocalisation(localFolderPath, "webapps")) {
                 // check only the bonita application
                 compareLevel(relativeLocalFolderPath + "bonita" + File.separator, null, comparaisonPolicy);
             } else {
                 for (String kid : localFolderPath.list()) {
 
-                    File folderKid =  ConfigAPI.getFolder(localFolderPath, File.separator + kid);
+                    File folderKid = ConfigAPI.getFolder(localFolderPath, File.separator + kid);
 
                     if (folderKid.isDirectory()) {
                         if (kid.equals("logs") || kid.endsWith("request_key_utils"))
@@ -208,7 +198,7 @@ public class ComparaisonOperation {
             e.printStackTrace(new PrintWriter(sw));
             String exceptionDetails = sw.toString();
 
-            comparaisonResult.severe( new BEvent( ComparaisonResult.EVENT_ERROR, e,  "Error " + e.getMessage() + " at " + exceptionDetails));
+            comparaisonResult.severe(new BEvent(ComparaisonResult.EVENT_ERROR, e, "Error " + e.getMessage() + " at " + exceptionDetails));
         }
     }
 }

@@ -3,6 +3,7 @@ package org.bonitasoft.serverconfiguration;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +88,7 @@ public class CollectResult {
     /*                                                                                  */
     /*                                                                                  */
     /* ******************************************************************************** */
-    public enum TYPECOLLECTOR { platform_engine, platform_portal, conf, bonita };
+    public enum TYPECOLLECTOR { platform_engine, platform_portal, conf, bonita, defaultCollector };
 
     
     public class ClassCollect {
@@ -97,7 +98,7 @@ public class CollectResult {
          * Key is the collector Name (platform_engine, platform_portal)
          * contents are KeyPropertiesReader
          */
-        public Map<TYPECOLLECTOR, List<KeyPropertiesReader>> mapKeyPropertiesReader = new HashMap<>();
+        public Map<TYPECOLLECTOR, List<KeyPropertiesReader>> mapKeyPropertiesReader = new EnumMap(TYPECOLLECTOR.class);
         /**
          * KeyProperties attached to a tenant
          * - key is the TenantId
@@ -216,7 +217,7 @@ public class CollectResult {
     public void setCollectorTenant(long tenantId) {
         currentCollector = currentClassCollect.listTenantsReader.get(tenantId);
         if (currentCollector == null) {
-            currentCollector = new ArrayList<KeyPropertiesReader>();
+            currentCollector = new ArrayList<>();
             currentClassCollect.listTenantsReader.put(tenantId, currentCollector);
         }
     }
@@ -224,7 +225,7 @@ public class CollectResult {
     public void setCollector(TYPECOLLECTOR collectorName) {
         currentCollector = currentClassCollect.mapKeyPropertiesReader.get(collectorName);
         if (currentCollector == null) {
-            currentCollector = new ArrayList<KeyPropertiesReader>();
+            currentCollector = new ArrayList<>();
             currentClassCollect.mapKeyPropertiesReader.put(collectorName, currentCollector);
         }
     }
@@ -241,6 +242,14 @@ public class CollectResult {
         listEvents.addAll(keyPropertiesReaders.listEvents);
         if (currentCollector != null)
             currentCollector.add(keyPropertiesReaders);
+        else {
+            List<KeyPropertiesReader> defaultCollector = currentClassCollect.mapKeyPropertiesReader.get( TYPECOLLECTOR.defaultCollector );
+            if (defaultCollector==null) {
+                defaultCollector = new ArrayList<>();            
+                currentClassCollect.mapKeyPropertiesReader.put( TYPECOLLECTOR.defaultCollector, defaultCollector );
+            }
+            defaultCollector.add(keyPropertiesReaders);
+        }
     }
 
     public void reportContentText(ContentTypeText contentText) {

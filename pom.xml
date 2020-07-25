@@ -2,7 +2,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bonitasoft.serverconfiguration</groupId>
 	<artifactId>bonita-serverconfiguration</artifactId>
-	<version>1.2.0</version>
+	<version>1.4.0</version>
+
+	<properties>
+		<bonita.version>7.10.4</bonita.version>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
 
 	<dependencies>
 
@@ -10,19 +16,19 @@
 		<dependency>
 			<groupId>org.bonitasoft.engine</groupId>
 			<artifactId>bonita-client</artifactId>
-			<version>7.9.2</version>
+			<version>${bonita.version}</version>
 		</dependency>
-		<!-- mvn install:install-file -Dfile=console-common-7.9.2.jar -DgroupId=org.bonitasoft.console -DartifactId=console-common -Dversion=7.9.2 -Dpackaging=jar -->
+		<!-- mvn install:install-file -Dfile=console-common-7.10.4.jar -DgroupId=org.bonitasoft.console -DartifactId=console-common -Dversion=7.10.4 -Dpackaging=jar -->
 		<dependency>
 			<groupId>org.bonitasoft.console</groupId>
 			<artifactId>console-common</artifactId>
-			<version>7.9.2</version>
+			<version>${bonita.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.bonitasoft.platform</groupId>
 			<artifactId>platform-setup</artifactId>
-			<version>7.9.2</version>
+			<version>${bonita.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bonitasoft.log.event</groupId>
