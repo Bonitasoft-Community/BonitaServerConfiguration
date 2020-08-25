@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bonitasoft.serverconfiguration</groupId>
 	<artifactId>bonita-serverconfiguration</artifactId>
-	<version>1.4.0</version>
+	<version>1.5.0</version>
 
 	<properties>
 		<bonita.version>7.10.4</bonita.version>

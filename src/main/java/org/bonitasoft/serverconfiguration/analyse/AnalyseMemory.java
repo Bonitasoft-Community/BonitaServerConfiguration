@@ -1,5 +1,7 @@
 package org.bonitasoft.serverconfiguration.analyse;
 
+import org.bonitasoft.engine.api.APIAccessor;
+import org.bonitasoft.serverconfiguration.CollectOperation.BonitaAccessor;
 import org.bonitasoft.serverconfiguration.CollectResult;
 import org.bonitasoft.serverconfiguration.analyse.Analyse.AnalyseRecommendation;
 import org.bonitasoft.serverconfiguration.analyse.Analyse.LEVELRECOMMENDATION;
@@ -25,7 +27,7 @@ public class AnalyseMemory extends Analyse {
     }
 
     @Override
-    public void analyse(CollectResult collectResult) {
+    public void analyse(CollectResult collectResult,BonitaAccessor apiAccessor) {
         long totalMemoryInMb = Runtime.getRuntime().totalMemory() / 1024 / 1024;
         
         setInfo("Memory (Mb)", totalMemoryInMb);

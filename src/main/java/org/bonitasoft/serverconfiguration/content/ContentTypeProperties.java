@@ -155,7 +155,7 @@ public class ContentTypeProperties extends ContentType {
 
         private List<String> getDecomposePath(boolean topDown) {
             StringTokenizer st = new StringTokenizer(getCompleteFileName(), File.separator);
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             while (st.hasMoreElements()) {
                 if (topDown)
                     list.add(st.nextToken());
@@ -200,17 +200,28 @@ public class ContentTypeProperties extends ContentType {
             return defaultValue;
         }
 
+        public String getStringValue(String name, String defaultValue) {
+            try {
+                for (KeyProperties keyProperties : listKeys) {
+                    if (keyProperties.name.equals(name))
+                        return keyProperties.value;
+                }
+            } catch (Exception e) {
+                return defaultValue;
+            }
+            return defaultValue;
+        }
         public Map<String, Object> getMap(boolean lineFeedToHtml) {
-            Map<String, Object> record = new HashMap<String, Object>();
+            Map<String, Object> record = new HashMap<>();
 
             record.put("name", file.getName());
             record.put("filename", file.getAbsolutePath());
             record.put("listevents", BEventFactory.getSyntheticHtml(listEvents));
-            List<Map<String, Object>> listMapKeys = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> listMapKeys = new ArrayList<>();
             record.put("keys", listMapKeys);
 
             for (KeyProperties keyProperties : listKeys) {
-                Map<String, Object> recordKey = new HashMap<String, Object>();
+                Map<String, Object> recordKey = new HashMap<>();
                 recordKey.put("name", keyProperties.name);
                 recordKey.put("value", keyProperties.value);
                 recordKey.put("isEnable", keyProperties.isEnable);

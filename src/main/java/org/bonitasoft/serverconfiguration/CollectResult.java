@@ -179,13 +179,17 @@ public class CollectResult {
 
         }
 
+        public Map<Long, List<KeyPropertiesReader>> getListTenantsReader() {
+           return listTenantsReader;
+        }
+
     }
 
     /**
      * Contains all items collected.
      * Key is the TYPECOLLECT enum
      */
-    public Map<String, ClassCollect> mapClassCollect = new HashMap<String, ClassCollect>();
+    public Map<String, ClassCollect> mapClassCollect = new HashMap<>();
 
     /**
      * Only available to load values

@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bonitasoft.engine.api.APIAccessor;
+import org.bonitasoft.serverconfiguration.CollectOperation.BonitaAccessor;
 import org.bonitasoft.serverconfiguration.CollectResult;
 
 public abstract class Analyse {
@@ -20,6 +22,8 @@ public abstract class Analyse {
         listAnalyses.add( new AnalyseMemory() );
         listAnalyses.add( new AnalyseDatasource() );
         listAnalyses.add( new AnalyseCluster() );
+        listAnalyses.add( new AnalysePassword() );
+        listAnalyses.add( new AnalyseWorkerLoad() );
         return listAnalyses;
     }
     /* ******************************************************************************** */
@@ -29,7 +33,7 @@ public abstract class Analyse {
     /*                                                                                  */
     /* ******************************************************************************** */
 
-    public abstract void analyse( CollectResult collectResult );
+    public abstract void analyse( CollectResult collectResult, BonitaAccessor apiAccessor );
     
     /* ******************************************************************************** */
     /*                                                                                  */
@@ -38,7 +42,7 @@ public abstract class Analyse {
     /*                                                                                  */
     /* ******************************************************************************** */
 
-    Map<String,Object> infos=new LinkedHashMap<String,Object>();
+    Map<String,Object> infos=new LinkedHashMap<>();
     public Map<String,Object> getInfos() {
         return infos;
     }
@@ -76,7 +80,7 @@ public abstract class Analyse {
         public String whatToDo;
     }
     
-    List<AnalyseRecommendation> recommendations=new ArrayList<AnalyseRecommendation>();
+    List<AnalyseRecommendation> recommendations=new ArrayList<>();
     
     public List<AnalyseRecommendation> getRecommendations() {
         return recommendations;

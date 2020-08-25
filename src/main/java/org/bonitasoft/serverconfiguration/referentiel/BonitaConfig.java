@@ -14,8 +14,8 @@ public abstract class BonitaConfig {
 
     /**
      * check if the path finish by the endpath
-     * BUT on winwdows, absolutepath is \analysis\7.8.4\BonitaSubscription-7.8.4_SIT_110119-2
-     * on Linus, it's \analysis\7.8.4\BonitaSubscription-7.8.4_SIT_110119-2
+     * BUT on windows, absolutepath is \\analysis\\7.8.4\\BonitaSubscription-7.8.4_SIT_110119-2
+     * on Linux, it's                  /analysis/7.8.4/BonitaSubscription-7.8.4_SIT_110119-2
      * File.pathSep
      * 
      * @param folder

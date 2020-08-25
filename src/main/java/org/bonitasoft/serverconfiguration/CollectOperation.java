@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.bonitasoft.console.common.server.preferences.properties.ConsoleProperties;
 import org.bonitasoft.console.common.server.preferences.properties.PropertiesFactory;
+import org.bonitasoft.engine.api.APIAccessor;
+import org.bonitasoft.engine.api.IdentityAPI;
+import org.bonitasoft.engine.api.ProcessAPI;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 import org.bonitasoft.serverconfiguration.CollectResult.COLLECTLOGSTRATEGY;
@@ -23,8 +26,8 @@ import org.bonitasoft.serverconfiguration.referentiel.BonitaConfigPath;
 
 public class CollectOperation {
 
-    public static BEvent EVENT_DIRECTORYNOTEXIST = new BEvent(CollectOperation.class.getName(), 1, Level.APPLICATIONERROR, "Directory not exist", "A directory is expected, not found", "Collect will not be complete", "Check error");
-    public static BEvent EVENT_ERRORCOLLECT = new BEvent(CollectOperation.class.getName(), 2, Level.ERROR, "Error during collect", "An exception is detected during the collect", "Collect will not be complete", "Check exception");
+    public final static BEvent EVENT_DIRECTORYNOTEXIST = new BEvent(CollectOperation.class.getName(), 1, Level.APPLICATIONERROR, "Directory not exist", "A directory is expected, not found", "Collect will not be complete", "Check error");
+    public final static BEvent EVENT_ERRORCOLLECT = new BEvent(CollectOperation.class.getName(), 2, Level.ERROR, "Error during collect", "An exception is detected during the collect", "Collect will not be complete", "Check exception");
     private BonitaConfigPath localBonitaConfig;
     CollectParameter collectParameter;
 
@@ -32,6 +35,11 @@ public class CollectOperation {
         SETUP, SERVER, ANALYSIS, PLATFORM
     };
 
+    public static class BonitaAccessor {
+        public ProcessAPI processAPI;
+        public IdentityAPI identityAPI;
+        public long tenantId;
+    }
     public CollectOperation() {
 
     }
@@ -42,7 +50,7 @@ public class CollectOperation {
      * @param logStrategy
      * @return
      */
-    public CollectResult collectParameters(BonitaConfigPath bonitaConfig, CollectParameter collectParameter, COLLECTLOGSTRATEGY logStrategy) {
+    public CollectResult collectParameters(BonitaConfigPath bonitaConfig, CollectParameter collectParameter, COLLECTLOGSTRATEGY logStrategy, BonitaAccessor apiAccessor) {
         CollectResult collectResult = null;
 
         this.localBonitaConfig = bonitaConfig;
@@ -65,7 +73,7 @@ public class CollectOperation {
                 exploreLevel("/", TYPECOLLECT.ANALYSIS, collectResult);
                 List<Analyse> listAnalyses = Analyse.instanciateAllAnalyses();
                 for (Analyse analyse : listAnalyses) {
-                    analyse.analyse(collectResult);
+                    analyse.analyse(collectResult, apiAccessor);
                     collectResult.reportAnalysis(analyse);
                 }
             }

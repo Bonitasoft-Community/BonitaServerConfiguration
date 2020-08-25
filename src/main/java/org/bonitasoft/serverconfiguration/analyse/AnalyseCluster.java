@@ -3,7 +3,9 @@ package org.bonitasoft.serverconfiguration.analyse;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.bonitasoft.serverconfiguration.CollectOperation.BonitaAccessor;
 import org.bonitasoft.serverconfiguration.CollectOperation.TYPECOLLECT;
+import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.serverconfiguration.CollectResult;
 import org.bonitasoft.serverconfiguration.CollectResult.ClassCollect;
 import org.bonitasoft.serverconfiguration.CollectResult.TYPECOLLECTOR;
@@ -40,7 +42,7 @@ public class AnalyseCluster extends Analyse {
     private final static String KEY_AWS = "bonita.platform.cluster.hazelcast.aws.enabled";
 
     @Override
-    public void analyse(CollectResult collectResult) {
+    public void analyse(CollectResult collectResult,BonitaAccessor apiAccessor) {
         // Edit the file setup/platform_conf/initial/platform_engine/bonita-platform-sp-custom.properties: Uncomment and set the bonita.cluster property to true, as follows: bonita.cluster=true
         boolean cluster;
         ClassCollect classCollectSetup = collectResult.mapClassCollect.get(TYPECOLLECT.SETUP.toString());

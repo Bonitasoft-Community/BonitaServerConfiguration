@@ -11,8 +11,10 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
+import org.bonitasoft.serverconfiguration.CollectOperation.BonitaAccessor;
 import org.bonitasoft.serverconfiguration.CollectOperation.TYPECOLLECT;
 import org.bonitasoft.serverconfiguration.CollectResult.COLLECTLOGSTRATEGY;
 import org.bonitasoft.serverconfiguration.ComparaisonResult.LOGSTRATEGY;
@@ -166,13 +168,22 @@ private static class Worker extends Thread {
             CollectParameter comparaisonParameter = new CollectParameter();
             comparaisonParameter.listTypeCollect = new HashSet<>();
 
-            if (getBoolean(parameters.get("collectSetup"), false))
+            boolean collectOnlyForAnalisys=true;
+            if (getBoolean(parameters.get("collectSetup"), false)) {
                 comparaisonParameter.listTypeCollect.add(TYPECOLLECT.SETUP);
-            if (getBoolean(parameters.get("collectServer"), false))
+                collectOnlyForAnalisys=false;
+            }
+            if (getBoolean(parameters.get("collectServer"), false)) {
                 comparaisonParameter.listTypeCollect.add(TYPECOLLECT.SERVER);
-            if (getBoolean(parameters.get("collectAnalysis"), false))
+                collectOnlyForAnalisys=false;
+            }
+            if (getBoolean(parameters.get("collectAnalysis"), false)) 
                 comparaisonParameter.listTypeCollect.add(TYPECOLLECT.ANALYSIS);
 
+            // analysis need to check if password is compliance
+            if (collectOnlyForAnalisys)
+                comparaisonParameter.hidePassword=false;
+            
             comparaisonParameter.useLocalFile = getBoolean(parameters.get("useLocalFile"), true);
             comparaisonParameter.doSetupPull = getBoolean(parameters.get("doSetupPull"), true);
 
@@ -190,10 +201,10 @@ private static class Worker extends Thread {
      * @param logStrategy
      * @return
      */
-    public CollectResult collectParameters(CollectParameter collectParameter, COLLECTLOGSTRATEGY logStrategy) {
+    public CollectResult collectParameters(CollectParameter collectParameter, COLLECTLOGSTRATEGY logStrategy, BonitaAccessor apiAccessor) {
 
         CollectOperation collectOperation = new CollectOperation();
-        return collectOperation.collectParameters(localBonitaConfig, collectParameter, logStrategy);
+        return collectOperation.collectParameters(localBonitaConfig, collectParameter, logStrategy, apiAccessor);
     }
 
     /* ******************************************************************************** */

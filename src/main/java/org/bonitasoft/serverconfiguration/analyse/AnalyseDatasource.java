@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.serverconfiguration.CollectResult;
+import org.bonitasoft.serverconfiguration.CollectOperation.BonitaAccessor;
 import org.bonitasoft.serverconfiguration.CollectOperation.TYPECOLLECT;
 import org.bonitasoft.serverconfiguration.CollectResult.ClassCollect;
 import org.bonitasoft.serverconfiguration.CollectResult.TYPECOLLECTOR;
@@ -47,7 +49,7 @@ public class AnalyseDatasource extends Analyse{
         public long worker=0;
     }
     @Override
-    public void analyse(CollectResult collectResult) {
+    public void analyse(CollectResult collectResult,BonitaAccessor apiAccessor) {
         
         ClassCollect classCollect = collectResult.getClassCollect( TYPECOLLECT.ANALYSIS.toString());
 
