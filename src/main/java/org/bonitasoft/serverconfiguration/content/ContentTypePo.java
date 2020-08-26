@@ -29,7 +29,7 @@ public class ContentTypePo extends ContentTypeText {
 
     }
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel(ComparaisonParameter comparaisonParameter) {
         return DIFFERENCELEVEL.LOWER;
     }
     public void compareFile(File fileLocal, File fileReferentiel, ComparaisonParameter comparaisonParameter, ComparaisonResult comparaisonResult) {

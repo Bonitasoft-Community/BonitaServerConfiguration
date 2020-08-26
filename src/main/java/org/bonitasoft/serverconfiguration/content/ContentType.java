@@ -25,8 +25,12 @@ public abstract class ContentType {
     public abstract String getName();
 
     public abstract boolean matchFile(File file);
-    
-    public abstract DIFFERENCELEVEL getLevel();
+    /**
+     * ComparaisonParameter is given, in order to calculate a correct level. For example, change the database.propertie is expected if you compare with a Bundle 
+     * @param comparaisonParameter
+     * @return
+     */
+    public abstract DIFFERENCELEVEL getLevel( ComparaisonParameter comparaisonParameter);
 
     /* ******************************************************************************** */
     /*                                                                                  */

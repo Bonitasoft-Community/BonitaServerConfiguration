@@ -35,7 +35,7 @@ public class ContentTypeImage extends ContentTypeBinary {
     }
 
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel(ComparaisonParameter comparaisonParameter) {
        return DIFFERENCELEVEL.LOWER;
     }
     
@@ -49,7 +49,7 @@ public class ContentTypeImage extends ContentTypeBinary {
 
        comparaisonResult.info("  [" + fileLocal.getName() + "] (IMAGE) <-> [" + fileReferentiel.getName() + "] (" + fileLocal.getAbsolutePath() + ") <-> (" + fileReferentiel.getAbsolutePath() + ")");
        if (!signatureLocal.equals(signatureReferentiel)) {
-           comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT, DIFFERENCELEVEL.LOWER,  "Signature are different Referentiel[" + signatureReferentiel + "] Local[" + signatureLocal + "]");
+           comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT, DIFFERENCELEVEL.LOWER,  "Signature are different Referentiel[" + signatureReferentiel + "] Local[" + signatureLocal + "]", comparaisonParameter);
        }
 
     }

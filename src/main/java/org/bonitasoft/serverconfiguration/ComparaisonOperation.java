@@ -45,7 +45,7 @@ public class ComparaisonOperation {
         comparaisonResult.listEvents.addAll(referentiel.initialisation());
 
         if (!this.localBonitaConfig.getRootPath().exists()) {
-            comparaisonResult.report(this.localBonitaConfig.getRootPath(), DIFFERENCESTATUS.ERROR, DIFFERENCELEVEL.CRITICAL, " DirectoryLocal [" + this.localBonitaConfig.getRootPath().getAbsolutePath() + "] does not exist");
+            comparaisonResult.report(this.localBonitaConfig.getRootPath(), DIFFERENCESTATUS.ERROR, DIFFERENCELEVEL.CRITICAL, " DirectoryLocal [" + this.localBonitaConfig.getRootPath().getAbsolutePath() + "] does not exist",comparaisonParameter);
             return comparaisonResult;
         }
         if (BEventFactory.isError(comparaisonResult.listEvents)) {
@@ -78,30 +78,40 @@ public class ComparaisonOperation {
 
             // this may arrive when we expect some directory, like  "current/platform_engine"
             if (!localFolderPath.exists()) {
-                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY, DIFFERENCELEVEL.IMPORTANT, "Directory [" + localFolderPath.getAbsolutePath() + "]");
+                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY, DIFFERENCELEVEL.IMPORTANT, "Directory [" + localFolderPath.getAbsolutePath() + "]",comparaisonParameter);
                 return;
             }
 
-            // ignore a temporaty folder
+            // ignore a temporary folder
             if (localFolderPath.isDirectory()
                     && comparaisonParameter.ignoreTemp
                     && (localFolderPath.getAbsolutePath().endsWith("temp") || localFolderPath.getAbsolutePath().endsWith("tmp")))
                 return;
-            // ignore the deferedJs
+            if (localFolderPath.isDirectory()
+                    && comparaisonParameter.ignoreTemp
+                    && (localFolderPath.getAbsolutePath().endsWith("work") ))
+                return;
+            if (localFolderPath.isDirectory()
+                    && comparaisonParameter.ignoreTemp
+                    && (localFolderPath.getAbsolutePath().endsWith("tomcat-backups") ))
+                return;
+            
+            
+           // ignore the deferedJs
             if (BonitaConfig.checkLocalisation(localFolderPath, "server/webapps/bonita/portal/deferredjs") && comparaisonParameter.ignoreDeferedJs) {
                 return;
             }
 
             ContentPath refContent = referentiel.getContentLevel(relativeReferenceFolderPath == null ? relativeLocalFolderPath : relativeReferenceFolderPath);
             if (!refContent.isContentExist()) {
-                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY, DIFFERENCELEVEL.IMPORTANT, "Directory [" + (relativeReferenceFolderPath == null ? relativeLocalFolderPath : relativeReferenceFolderPath) + "]");
+                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY, DIFFERENCELEVEL.IMPORTANT, "Directory [" + (relativeReferenceFolderPath == null ? relativeLocalFolderPath : relativeReferenceFolderPath) + "]",comparaisonParameter);
                 return;
             }
 
             ContentPath localContent = this.localBonitaConfig.getContentLevel(relativeLocalFolderPath);
             // this content does not exist in the referentiel, no need to go under
             if (!refContent.isContentExist()) {
-                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY, DIFFERENCELEVEL.IMPORTANT, " Directory [" + relativeLocalFolderPath + "] does not exist in referentiel");
+                comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY, DIFFERENCELEVEL.IMPORTANT, " Directory [" + relativeLocalFolderPath + "] does not exist in referentiel",comparaisonParameter);
                 return;
             }
             // First, all references files which are not in the local are suspect
@@ -115,17 +125,17 @@ public class ComparaisonOperation {
                             continue;
 
                         // get the level of the missing file
-                        DIFFERENCELEVEL level = DIFFERENCELEVEL.IMPORTANT;
+                        
                         ContentType contentType = ContentType.getContentType(refFile);
-                        level = (contentType == null ? DIFFERENCELEVEL.IMPORTANT : contentType.getLevel());
+                        DIFFERENCELEVEL level = (contentType == null ? DIFFERENCELEVEL.IMPORTANT : contentType.getLevel(comparaisonParameter));
 
-                        comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY, level, (refFile.isDirectory() ? "Directory" : "File") + " [" + refFile.getName() + "]");
+                        comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY, level, (refFile.isDirectory() ? "Directory" : "File") + " [" + refFile.getName() + "]",comparaisonParameter);
                         continue;
                     }
                     if (refFile.isDirectory() && localFile.isDirectory())
                         continue;
                     else if (refFile.isDirectory() || localFile.isDirectory())
-                        comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.DIFFERENT, DIFFERENCELEVEL.IMPORTANT, "Referentiel isFolder? " + refFile.isDirectory() + " localIsFolder?" + localFile.isDirectory());
+                        comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.DIFFERENT, DIFFERENCELEVEL.IMPORTANT, "Referentiel isFolder? " + refFile.isDirectory() + " localIsFolder?" + localFile.isDirectory(),comparaisonParameter);
                     else {
                         // compare the file itself now                    
                         refContent.compareFile(refFile, localFile, comparaisonParameter, comparaisonResult);
@@ -142,11 +152,11 @@ public class ComparaisonOperation {
                         continue;
 
                     // get the level of the missing file
-                    DIFFERENCELEVEL level = DIFFERENCELEVEL.IMPORTANT;
+                    
                     ContentType contentType = ContentType.getContentType(localFile);
-                    level = (contentType == null ? DIFFERENCELEVEL.IMPORTANT : contentType.getLevel());
+                    DIFFERENCELEVEL level = (contentType == null ? DIFFERENCELEVEL.IMPORTANT : contentType.getLevel(comparaisonParameter));
 
-                    comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY, level, (localFile.isDirectory() ? "Directory" : "File") + " [" + localFile.getName() + "]");
+                    comparaisonResult.report(localFolderPath, DIFFERENCESTATUS.LOCALONLY, level, (localFile.isDirectory() ? "Directory" : "File") + " [" + localFile.getName() + "]",comparaisonParameter);
                     continue;
                 }
             }

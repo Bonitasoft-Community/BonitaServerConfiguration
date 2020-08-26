@@ -28,7 +28,7 @@ import org.xmlunit.diff.Difference;
 // Read more: https://javarevisited.blogspot.com/2017/04/how-to-compare-two-xml-files-in-java.html#ixzz64wEIRa7y
 public class ContentTypeXml extends ContentTypeText {
 
-    Logger logger = Logger.getLogger(ContentTypeProperties.class.getName());
+    Logger logger = Logger.getLogger(ContentTypeXml.class.getName());
 
     private String content;
 
@@ -53,7 +53,10 @@ public class ContentTypeXml extends ContentTypeText {
     }
 
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel(ComparaisonParameter comparaisonParameter) {
+        if (comparaisonParameter.referentielIsABundle && file.getName().endsWith("bonita.xml"))
+            return DIFFERENCELEVEL.EXPECTED;
+   
         return DIFFERENCELEVEL.IMPORTANT;
     }
 
@@ -72,7 +75,7 @@ public class ContentTypeXml extends ContentTypeText {
             Diff diff = diffBuilder.build();
 
             for (Difference difference : diff.getDifferences()) {
-                comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT, getLevel(), difference.toString());
+                comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT, getLevel(comparaisonParameter), difference.toString(),comparaisonParameter);
             }
         } catch (Exception e) {
             {

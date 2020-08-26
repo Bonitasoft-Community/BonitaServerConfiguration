@@ -10,7 +10,7 @@ import org.bonitasoft.serverconfiguration.ConfigAPI.ComparaisonParameter;
 
 public class ContentTypeZip extends ContentTypeBinary {
 
-    Logger logger = Logger.getLogger(ContentTypeProperties.class.getName());
+    Logger logger = Logger.getLogger(ContentTypeZip.class.getName());
 
     public ContentTypeZip(File file ) {
         super( file );
@@ -26,7 +26,7 @@ public class ContentTypeZip extends ContentTypeBinary {
 
     }
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel(ComparaisonParameter comparaisonParameter) {
         return DIFFERENCELEVEL.IMPORTANT;       
     }
     public void compareFile(File fileLocal, File fileReferentiel, ComparaisonParameter comparaisonParameter, ComparaisonResult comparaisonResult) {
@@ -36,7 +36,7 @@ public class ContentTypeZip extends ContentTypeBinary {
 
         comparaisonResult.info("  [" + fileLocal.getName() + "] (ZIP) <-> [" + fileReferentiel.getName() + "] (" + fileLocal.getAbsolutePath() + ") <-> (" + fileReferentiel.getAbsolutePath() + ")");
         if (!signatureLocal.equals(signatureReferentiel)) {
-            comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT,  getLevel(), "Signature are different Referentiel[" + signatureReferentiel + "] Local[" + signatureLocal + "]");
+            comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT,  getLevel(comparaisonParameter), "Signature are different Referentiel[" + signatureReferentiel + "] Local[" + signatureLocal + "]",comparaisonParameter);
         }
     }
    

@@ -26,7 +26,9 @@ public class ContentTypeJar extends ContentTypeBinary {
 
     }
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel(ComparaisonParameter comparaisonParameter) {
+        if (comparaisonParameter.referentielIsABundle && file.getName().contains("ojdbc"))
+            return DIFFERENCELEVEL.EXPECTED;
         return DIFFERENCELEVEL.CRITICAL;
     }
     public void compareFile(File fileLocal, File fileReferentiel, ComparaisonParameter comparaisonParameter, ComparaisonResult comparaisonResult) {
@@ -36,7 +38,7 @@ public class ContentTypeJar extends ContentTypeBinary {
 
         comparaisonResult.info("  [" + fileLocal.getName() + "] (JAR) <-> [" + fileReferentiel.getName() + "] (" + fileLocal.getAbsolutePath() + ") <-> (" + fileReferentiel.getAbsolutePath() + ")");
         if (!signatureLocal.equals(signatureReferentiel)) {
-            comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT,  getLevel(), "Signature are different Referentiel[" + signatureReferentiel + "] Local[" + signatureLocal + "]");
+            comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT,  getLevel( comparaisonParameter ), "Signature are different Referentiel[" + signatureReferentiel + "] Local[" + signatureLocal + "]",comparaisonParameter);
         }
     }
 

@@ -41,11 +41,13 @@ public class ContentTypeProperties extends ContentType {
     }
 
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel(ComparaisonParameter comparaisonParameter) {
         if (file.getName().contains("logging.properties"))
             return DIFFERENCELEVEL.MEDIUM;
-        if (file.getName().contains("custom-permissions-mapping.properties"))
-            return DIFFERENCELEVEL.MEDIUM;
+        if (comparaisonParameter.referentielIsABundle && file.getName().contains("custom-permissions-mapping.properties"))
+            return DIFFERENCELEVEL.EXPECTED;
+        if (comparaisonParameter.referentielIsABundle && file.getName().contains("database.properties"))
+            return DIFFERENCELEVEL.EXPECTED;
         return DIFFERENCELEVEL.IMPORTANT;
     }
 
@@ -57,7 +59,7 @@ public class ContentTypeProperties extends ContentType {
         comparaisonResult.info("    [" + fileLocal.getName() + "] (Properties) <-> [" + fileReferentiel.getName() + "] (" + fileLocal.getAbsolutePath() + ") <-> (" + fileReferentiel.getAbsolutePath() + ")");
 
         // change in logging.properties ? It's a MEDIUM level
-        DIFFERENCELEVEL level = getLevel();
+        DIFFERENCELEVEL level = getLevel(comparaisonParameter);
         // change in a txt, or a md is not important
 
         try {
@@ -86,7 +88,21 @@ public class ContentTypeProperties extends ContentType {
                 String propertyLocal = propLocal.getProperty(keyLocal.toString());
                 String propertyReferentiel = propReferentiel.getProperty(keyLocal.toString());
                 if (propertyReferentiel == null) {
-                    comparaisonResult.reportLocalOnly(fileLocal, level, propertyLocal, "Key=" + keyLocal, true);
+                    if (fileLocal.getName().contains("bonita-platform-community-custom.properties")
+                            && comparaisonParameter.referentielIsABundle 
+                            && ("platformAdminPassword".equals(keyLocal.toString()) || "platformAdminUsername".equals(keyLocal.toString())))
+                        comparaisonResult.reportLocalOnly(fileLocal, DIFFERENCELEVEL.EXPECTED, propertyLocal, "Key=" + keyLocal, true);
+                    
+                    else if (fileLocal.getName().contains("platform-tenant-config.properties")
+                            && comparaisonParameter.referentielIsABundle 
+                            && ("platform.tenant.default.password".equals(keyLocal.toString()) || "platform.tenant.default.username".equals(keyLocal.toString())))
+                        comparaisonResult.reportLocalOnly(fileLocal, DIFFERENCELEVEL.EXPECTED, propertyLocal, "Key=" + keyLocal, true);
+                    else if (fileLocal.getName().contains("bonita-tenant-community-custom.properties")
+                            && comparaisonParameter.referentielIsABundle 
+                            && ("userPassword".equals(keyLocal.toString()) || "userName".equals(keyLocal.toString())))
+                        comparaisonResult.reportLocalOnly(fileLocal, DIFFERENCELEVEL.EXPECTED, propertyLocal, "Key=" + keyLocal, true);
+                    else
+                        comparaisonResult.reportLocalOnly(fileLocal, level, propertyLocal, "Key=" + keyLocal, true);
                 }
             }
         } catch (Exception e) {

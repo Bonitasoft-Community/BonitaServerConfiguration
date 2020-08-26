@@ -9,9 +9,10 @@ import org.bonitasoft.serverconfiguration.ConfigAPI.ComparaisonParameter;
 
 public class ContentTypeOther extends ContentTypeBinary {
 
-    public ContentTypeOther(File file ) {
-        super(file );
+    public ContentTypeOther(File file) {
+        super(file);
     }
+
     @Override
     public String getName() {
         return "other";
@@ -23,9 +24,13 @@ public class ContentTypeOther extends ContentTypeBinary {
     }
 
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel(ComparaisonParameter comparaisonParameter) {
+        if (file.getName().endsWith("catalina.pid"))
+            return DIFFERENCELEVEL.WORKFILE;
+   
         return DIFFERENCELEVEL.IMPORTANT;
     }
+
     @Override
     public void compareFile(File fileLocal, File fileReferentiel, ComparaisonParameter comparaisonParameter, ComparaisonResult comparaisonResult) {
 
@@ -34,7 +39,7 @@ public class ContentTypeOther extends ContentTypeBinary {
 
         comparaisonResult.info("  [" + fileLocal.getName() + "] (OTHER) <-> [" + fileReferentiel.getName() + "] (" + fileLocal.getAbsolutePath() + ") <-> (" + fileReferentiel.getAbsolutePath() + ")");
         if (!signatureLocal.equals(signatureReferentiel)) {
-            comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT, getLevel(),  "Signature are different Referentiel[" + signatureReferentiel + "] Local[" + signatureLocal + "]");
+            comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT, getLevel(comparaisonParameter), "Signature are different Referentiel[" + signatureReferentiel + "] Local[" + signatureLocal + "]", comparaisonParameter);
         }
     }
 

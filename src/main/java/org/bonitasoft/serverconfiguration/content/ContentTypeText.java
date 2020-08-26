@@ -20,7 +20,7 @@ import com.github.difflib.patch.Patch;
 
 public class ContentTypeText extends ContentType {
 
-    Logger logger = Logger.getLogger(ContentTypeProperties.class.getName());
+    Logger logger = Logger.getLogger(ContentTypeText.class.getName());
 
     public ContentTypeText(File file) {
         super(file);
@@ -47,7 +47,7 @@ public class ContentTypeText extends ContentType {
     }
 
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel( ComparaisonParameter comparaisonParameter) {
         // change in a txt, or a md is not important
         if (file.getName().endsWith(".txt")
                 || file.getName().endsWith(".md"))
@@ -65,12 +65,12 @@ public class ContentTypeText extends ContentType {
         try {
             original = readFile(fileReferentiel);
             if (original == null) {
-                comparaisonResult.report(fileReferentiel, DIFFERENCESTATUS.ERROR, getLevel(), "Can't read file [" + fileReferentiel.toPath());
+                comparaisonResult.report(fileReferentiel, DIFFERENCESTATUS.ERROR, getLevel(comparaisonParameter), "Can't read file [" + fileReferentiel.toPath(),comparaisonParameter);
                 return;
             }
             revised = readFile(fileLocal);
             if (revised == null) {
-                comparaisonResult.report(fileReferentiel, DIFFERENCESTATUS.ERROR, getLevel(), "Can't read file [" + fileLocal.toPath());
+                comparaisonResult.report(fileReferentiel, DIFFERENCESTATUS.ERROR, getLevel(comparaisonParameter), "Can't read file [" + fileLocal.toPath(),comparaisonParameter);
                 return;
             }
             //compute the patch: this is the diffutils part
@@ -78,7 +78,7 @@ public class ContentTypeText extends ContentType {
 
             //simple output the computed patch to console
 
-            reportDeltas(getLevel(), fileReferentiel, fileLocal, patch.getDeltas(), comparaisonResult);
+            reportDeltas(getLevel(comparaisonParameter), fileReferentiel, fileLocal, patch.getDeltas(),  comparaisonParameter, comparaisonResult);
 
         } catch (DiffException e) {
 
@@ -131,9 +131,9 @@ public class ContentTypeText extends ContentType {
      * @param deltas
      * @param comparaisonResult
      */
-    public void reportDeltas(DIFFERENCELEVEL level, File fileReferentiel, File fileLocal, List<AbstractDelta<String>> deltas, ComparaisonResult comparaisonResult) {
+    public void reportDeltas(DIFFERENCELEVEL level, File fileReferentiel, File fileLocal, List<AbstractDelta<String>> deltas,  ComparaisonParameter comparaisonParameter, ComparaisonResult comparaisonResult) {
         for (AbstractDelta<String> delta : deltas) {
-            comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT, level, delta.toString());
+            comparaisonResult.report(fileLocal, DIFFERENCESTATUS.DIFFERENT, level, delta.toString(), comparaisonParameter);
         }
 
     }

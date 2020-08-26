@@ -13,11 +13,12 @@ import com.github.difflib.patch.Chunk;
 
 public class ContentTypeSh extends ContentTypeText {
 
-    Logger logger = Logger.getLogger(ContentTypeProperties.class.getName());
+    Logger logger = Logger.getLogger(ContentTypeSh.class.getName());
 
     public ContentTypeSh(File file ) {
         super( file );
     }
+    @Override
     public void compareFile(File fileLocal, File fileReferentiel, ComparaisonParameter comparaisonParameter, ComparaisonResult comparaisonResult) {
         super.compareFile(fileLocal, fileReferentiel, comparaisonParameter, comparaisonResult);
         // compare 2 Ascii file files
@@ -35,14 +36,17 @@ public class ContentTypeSh extends ContentTypeText {
 
     }
     @Override
-    public DIFFERENCELEVEL getLevel() {
+    public DIFFERENCELEVEL getLevel( ComparaisonParameter comparaisonParameter) {
+        if (comparaisonParameter.referentielIsABundle && file.getName().contains("setenv.sh"))
+            return DIFFERENCELEVEL.EXPECTED;
+
         return DIFFERENCELEVEL.MEDIUM;       
     }
     /**
      * special report: report on
      */
     @Override
-    public void reportDeltas(DIFFERENCELEVEL level,File fileReferentiel, File fileLocal, List<AbstractDelta<String>> deltas, ComparaisonResult comparaisonResult) {
+    public void reportDeltas(DIFFERENCELEVEL level,File fileReferentiel, File fileLocal, List<AbstractDelta<String>> deltas, ComparaisonParameter comparaisonParameter, ComparaisonResult comparaisonResult) {
 
         /**
          * not good, should report all delta in one call
@@ -64,7 +68,7 @@ public class ContentTypeSh extends ContentTypeText {
                     isOnlyRem = false;
             }
             if (!isOnlyRem)
-                comparaisonResult.reportDifference(fileLocal,  getLevel(), delta.getTarget().toString(), delta.getSource().toString(), "Difference in file", true);
+                comparaisonResult.reportDifference(fileLocal, level, delta.getTarget().toString(), delta.getSource().toString(), "Difference in file", true);
         }
 
     }
