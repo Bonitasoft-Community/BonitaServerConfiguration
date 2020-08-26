@@ -15,7 +15,7 @@ import org.bonitasoft.serverconfiguration.ComparaisonResult.DIFFERENCELEVEL;
 import org.bonitasoft.serverconfiguration.ComparaisonResult.DIFFERENCESTATUS;
 
 public class ComparaisonResultDecoMap {
-    Logger logger = Logger.getLogger(ConfigAPI.class.getName());
+    Logger logger = Logger.getLogger(ComparaisonResultDecoMap.class.getName());
 
     // private static String logHeader = "BonitaServerConfiguration.DecoMap:";
     
@@ -33,7 +33,7 @@ public class ComparaisonResultDecoMap {
     }
     
     public Map<String,Object> getMap() {
-        Map<String, Object> result= new HashMap<String,Object>();
+        Map<String, Object> result= new HashMap<>();
         result.put("countpercontent", comparaisonResult.getCountPerContentType());
         result.put("errors", comparaisonResult.getErrors());
         result.put("title", title);
@@ -42,21 +42,21 @@ public class ComparaisonResultDecoMap {
         
         result.put("diffNb", listComparaisonsItems.size());
         result.put("diffTimeInMs", comparaisonResult.getTime() );
-        List<Map<String,Object>> listComparaisons = new ArrayList<Map<String,Object>> ();
+        List<Map<String,Object>> listComparaisons = new ArrayList<> ();
         result.put("comparaisons", listComparaisons );
         
             for (ComparaisonItem comparaisonItem : listComparaisonsItems.values()) {
-                Map<String,Object> comparaisonItemMap = new HashMap<String,Object> ();
+                Map<String,Object> comparaisonItemMap = new HashMap<> ();
                 listComparaisons.add( comparaisonItemMap );
                 comparaisonItemMap.put("compoundSize", comparaisonItem.listCompounds.size());
                 comparaisonItemMap.put("compoundName", getDirectFileName( comparaisonItem.file) );
-                List<Map<String,Object>> listCompounds = new ArrayList<Map<String,Object>> ();
+                List<Map<String,Object>> listCompounds = new ArrayList<> ();
                 comparaisonItemMap.put("listCompound", listCompounds );
                
-                DIFFERENCELEVEL levelComparaison=DIFFERENCELEVEL.LOWER;
+                DIFFERENCELEVEL levelComparaison=DIFFERENCELEVEL.WORKFILE;
                 
                 for (ComparaisonCoumpound compound : comparaisonItem.listCompounds) {
-                    Map<String,Object> compoundMap = new HashMap<String,Object> ();
+                    Map<String,Object> compoundMap = new HashMap<> ();
                     listCompounds.add( compoundMap );
                     compoundMap.put("status", compound.differenceStatus.toString());
                     if (compound.level.isUpperThan( levelComparaison))
