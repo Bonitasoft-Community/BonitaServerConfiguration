@@ -1,12 +1,10 @@
 package org.bonitasoft.serverconfiguration.analyse;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bonitasoft.engine.api.APIAccessor;
 import org.bonitasoft.serverconfiguration.CollectOperation.BonitaAccessor;
 import org.bonitasoft.serverconfiguration.CollectResult;
 
@@ -19,6 +17,7 @@ public abstract class Analyse {
     
     public static List<Analyse> instanciateAllAnalyses() {
         List<Analyse> listAnalyses = new ArrayList<>();
+        listAnalyses.add( new AnalyseEnvironment());
         listAnalyses.add( new AnalyseMemory() );
         listAnalyses.add( new AnalyseDatasource() );
         listAnalyses.add( new AnalyseCluster() );
