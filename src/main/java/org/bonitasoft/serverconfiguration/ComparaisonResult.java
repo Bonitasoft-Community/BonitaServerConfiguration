@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEventFactory;
 import org.bonitasoft.log.event.BEvent.Level;
+import org.bonitasoft.serverconfiguration.ConfigAPI.ComparaisonParameter;
 import org.bonitasoft.serverconfiguration.content.ContentType;
 
 public class ComparaisonResult {
@@ -59,7 +60,7 @@ public class ComparaisonResult {
     public static class ComparaisonItem {
 
         public File file;
-        public List<ComparaisonCoumpound> listCompounds = new ArrayList<ComparaisonCoumpound>();
+        public List<ComparaisonCoumpound> listCompounds = new ArrayList<>();
         public void addCompound( DIFFERENCESTATUS status, DIFFERENCELEVEL level, String localValue, String referentielValue, String explanation, boolean withValues ) {
             ComparaisonCoumpound compound = new ComparaisonCoumpound();
             compound.differenceStatus = status;
@@ -72,9 +73,9 @@ public class ComparaisonResult {
         }
     }
 
-    private Map<String,ComparaisonItem> listComparaisonsItems = new HashMap<String,ComparaisonItem>();
+    private Map<String,ComparaisonItem> listComparaisonsItems = new HashMap<>();
 
-    private List<BEvent> listErrors= new ArrayList<BEvent>();
+    private List<BEvent> listErrors= new ArrayList<>();
     /**
      * 
      */
@@ -187,7 +188,7 @@ public class ComparaisonResult {
      *
      */
     public enum DIFFERENCELEVEL {
-        CRITICAL(0), IMPORTANT(1), MEDIUM(2), CONFIGURATION(3), LOWER(4);
+        CRITICAL(0), IMPORTANT(1), MEDIUM(2), CONFIGURATION(3), LOWER(4), EXPECTED(5), WORKFILE(6);
         private int severity;
         DIFFERENCELEVEL( int severity ) {
             this.severity = severity;
@@ -207,9 +208,11 @@ public class ComparaisonResult {
      * @param status
      * @param Explanation
      */
-    public void report(File localFolderPath, DIFFERENCESTATUS status, DIFFERENCELEVEL level, String explanation) {
+    public void report(File localFolderPath, DIFFERENCESTATUS status, DIFFERENCELEVEL level, String explanation, ComparaisonParameter comparaisonParameter) {
         ComparaisonItem item = getComparaisonItem(localFolderPath);
-        item.addCompound( status, level, null, null, explanation, false );
+        
+        DIFFERENCELEVEL requalifiedLevel = requalifyLevel( localFolderPath,status,level);
+        item.addCompound( status, requalifiedLevel, null, null, explanation, false );
         infoDifference("   ** Difference ** " + getRelativePath(localFolderPath) + " : " + status.toString() + " " + explanation);
     }
     /**
@@ -221,7 +224,9 @@ public class ComparaisonResult {
      */
     public void reportLocalOnly(File localFolderPath,  DIFFERENCELEVEL level, String localValue, String explanation, boolean withValues) {
         ComparaisonItem item = getComparaisonItem(localFolderPath);
-        item.addCompound( DIFFERENCESTATUS.LOCALONLY, level, localValue, null, explanation,withValues );
+       
+        DIFFERENCELEVEL requalifiedLevel = requalifyLevel( localFolderPath, DIFFERENCESTATUS.LOCALONLY, level);
+        item.addCompound( DIFFERENCESTATUS.LOCALONLY, requalifiedLevel, localValue, null, explanation,withValues );
         infoDifference("   ** Difference ** " + getRelativePath(localFolderPath) + " : " + DIFFERENCESTATUS.LOCALONLY.toString() + " " + explanation);
     }
     /**
@@ -233,7 +238,9 @@ public class ComparaisonResult {
      */
     public void reportReferentielOnly(File localFolderPath,  DIFFERENCELEVEL level, String referentielValue, String explanation, boolean withValues) {
         ComparaisonItem item = getComparaisonItem(localFolderPath);
-        item.addCompound( DIFFERENCESTATUS.REFERENTIELONLY, level, null, referentielValue, explanation, withValues );
+        
+        DIFFERENCELEVEL requalifiedLevel = requalifyLevel( localFolderPath, DIFFERENCESTATUS.REFERENTIELONLY, level);
+        item.addCompound( DIFFERENCESTATUS.REFERENTIELONLY, requalifiedLevel, null, referentielValue, explanation, withValues );
         infoDifference("   ** Difference ** " + getRelativePath(localFolderPath) + " : " + DIFFERENCESTATUS.REFERENTIELONLY.toString() + " " + explanation);
     }
     /**
@@ -246,7 +253,9 @@ public class ComparaisonResult {
      */
     public void reportDifference(File localFolderPath,  DIFFERENCELEVEL level, String localValue, String referentielValue, String explanation, boolean withValues) {
         ComparaisonItem item = getComparaisonItem(localFolderPath);
-        item.addCompound(  DIFFERENCESTATUS.DIFFERENT, level, localValue, referentielValue, explanation, withValues );
+        
+        DIFFERENCELEVEL requalifiedLevel = requalifyLevel( localFolderPath, DIFFERENCESTATUS.DIFFERENT, level);
+        item.addCompound(  DIFFERENCESTATUS.DIFFERENT, requalifiedLevel, localValue, referentielValue, explanation, withValues );
         infoDifference("   ** Difference ** " + getRelativePath(localFolderPath) + " : " + DIFFERENCESTATUS.DIFFERENT.toString() + " " + explanation + " LocalValue[" + localValue + "] ReferentielValue[" + referentielValue + "]");
     }
 
@@ -259,7 +268,9 @@ public class ComparaisonResult {
         e.printStackTrace(new PrintWriter(sw));
         String exceptionDetails = sw.toString();
         ComparaisonItem item = getComparaisonItem(localFolderPath);
-        item.addCompound(  DIFFERENCESTATUS.ERROR, DIFFERENCELEVEL.IMPORTANT, null, null, " Error :" + e.getMessage() + " at " + exceptionDetails, false );
+        
+        DIFFERENCELEVEL requalifiedLevel = requalifyLevel( localFolderPath, DIFFERENCESTATUS.ERROR, DIFFERENCELEVEL.IMPORTANT);
+        item.addCompound(  DIFFERENCESTATUS.ERROR, requalifiedLevel, null, null, " Error :" + e.getMessage() + " at " + exceptionDetails, false );
         
         severe( new BEvent( EVENT_ERROR,e, "   File:" + getRelativePath(localFolderPath) + " " + explanation+ " Error:" + e.getMessage() + " at " + exceptionDetails));
     }
@@ -285,7 +296,20 @@ public class ComparaisonResult {
         item.file = file;
         listComparaisonsItems.put(file.getAbsolutePath(),  item);
         return item;
-        
-        
     }
+    
+    /**
+     * Requalify some file. Attention, the default level should be fixed item per item, in the ContentType<xxx>.java
+     * @param localFolderPath
+     * @param status
+     * @param level
+     * @return
+     */
+    private DIFFERENCELEVEL requalifyLevel( File localFolderPath,  DIFFERENCESTATUS status, DIFFERENCELEVEL level) {
+        DIFFERENCELEVEL requalify = level;
+        
+            
+        return requalify;
+    }
+
 }
