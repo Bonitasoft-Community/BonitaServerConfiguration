@@ -1,8 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bonitasoft.serverconfiguration</groupId>
 	<artifactId>bonita-serverconfiguration</artifactId>
-	<version>1.7.0</version>
+	<version>1.8.0</version>
 
 	<properties>
 		<bonita.version>7.10.4</bonita.version>
@@ -33,21 +34,28 @@
 		<dependency>
 			<groupId>org.bonitasoft.log.event</groupId>
 			<artifactId>bonita-event</artifactId>
-			<version>1.7.0</version>
+			<version>1.10.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.bonitasoft.properties</groupId>
+			<artifactId>bonita-properties</artifactId>
+			<version>2.8.2</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.xmlunit</groupId>
 			<artifactId>xmlunit-core</artifactId>
 			<version>2.6.3</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>io.github.java-diff-utils</groupId>
 			<artifactId>java-diff-utils</artifactId>
 			<version>4.4</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -71,7 +79,7 @@
 			<layout>default</layout>
 		</repository>
 	</repositories>
-	
+
 	<build>
 		<plugins>
 			<!-- ******************** Copy JAR files under bonitamavenrepository **************** -->
@@ -91,7 +99,8 @@
 								String groupIdPath = "${project.groupId}".replace('.', '/');
 
 								String fileName = "${artifactId}-${version}.jar";
-								Path destPath = Paths.get( "../bonitamavenrepository/${groupIdPath}/${artifactId}/${version}" );
+								Path destPath = Paths.get(
+								"../bonitamavenrepository/${groupIdPath}/${artifactId}/${version}" );
 
 								Path sourceJarFile = Paths.get("target/"+fileName);
 								Path destJarFile = Paths.get( destPath.toString()+"/"+fileName);
@@ -103,31 +112,31 @@
 								return;
 
 								public void copyFile( Path sourcePath, Path destinationPath ) {
-									try {
-										Path parentPath = destinationPath.getParent();
-										println(" Create Directory:"+parentPath.toString());
-										Files.createDirectories(parentPath);
-		
-		
-										try {
-											if (destinationPath.toFile().exists()) {
-												println(" Delete existing file:"+destinationPath.toString());
-												Files.delete(destinationPath);
-											}
-										} catch(Exception e) {
-											println(" Error during deletion "+e.getMessage());
-										}
-										println(" Copy:"+sourcePath+" =>"+destinationPath);
-		
-	
-										def file = sourcePath.toFile();
-										def newFile = destinationPath.toFile();
-										Files.copy(file.toPath(), newFile.toPath());
-	
-									} catch(Exception e )
-									{
-										println("Exception "+e.getMessage());
-									}
+								try {
+								Path parentPath = destinationPath.getParent();
+								println(" Create Directory:"+parentPath.toString());
+								Files.createDirectories(parentPath);
+
+
+								try {
+								if (destinationPath.toFile().exists()) {
+								println(" Delete existing file:"+destinationPath.toString());
+								Files.delete(destinationPath);
+								}
+								} catch(Exception e) {
+								println(" Error during deletion "+e.getMessage());
+								}
+								println(" Copy:"+sourcePath+" =>"+destinationPath);
+
+
+								def file = sourcePath.toFile();
+								def newFile = destinationPath.toFile();
+								Files.copy(file.toPath(), newFile.toPath());
+
+								} catch(Exception e )
+								{
+								println("Exception "+e.getMessage());
+								}
 								}
 
 
